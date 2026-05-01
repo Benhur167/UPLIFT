@@ -1,0 +1,144 @@
+/* === Calm Blue Theme for Explore Resource Pages === */
+
+.page-bg {
+  background: #e8f0fe; /* soft calm blue background */
+  font-family: "Inter", sans-serif;
+  color: #0f172a;
+}
+
+/* Card containers */
+.card {
+  background: #ffffff;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
+}
+
+.card:hover,
+.card-hover:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Buttons */
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  font-size: 0.875rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: #1e40af;
+}
+
+.btn-soft {
+  background: #f1f5f9;
+  color: #1e3a8a;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.2s ease;
+}
+
+.btn-soft:hover {
+  background: #e0ecff;
+  border-color: #c7d2fe;
+}
+
+/* Muted blue text */
+.muted-blue {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+/* Widget cards inside Mindfulness */
+.widget {
+  background: #eff6ff;
+  border-left: 4px solid #2563eb;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  color: #1e3a8a;
+  transition: background 0.2s ease;
+}
+
+.widget:hover {
+  background: #dbeafe;
+}
+
+/* Smooth spacing */
+.space-y-3 > * + * {
+  margin-top: 0.75rem;
+}
+
+/* Section titles */
+h1, h2, h3 {
+  font-family: "Inter", sans-serif;
+}
+
+h1 {
+  font-size: 1.75rem;
+  color: #1e3a8a;
+}
+
+h2 {
+  font-size: 1.25rem;
+  color: #1e40af;
+}
+
+h3 {
+  font-size: 1rem;
+  color: #1e3a8a;
+}
+
+/* Links */
+a {
+  text-decoration: none;
+}
+
+a.text-blue-600:hover {
+  text-decoration: underline;
+}
+
+/* List styles */
+ul {
+  margin-top: 0.5rem;
+  color: #475569;
+}
+
+li {
+  margin-bottom: 0.4rem;
+}
+
+/* Utility spacing */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 0.75rem; }
+.mt-4 { margin-top: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
+
+/* Grid styling for cards (articles & workshops) */
+.grid {
+  display: grid;
+}
+
+.grid.gap-4 {
+  gap: 1rem;
+}
+
+.sm\:grid-cols-2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+/* Hover lift on article/workshop cards */
+.card-hover {
+  cursor: pointer;
+}

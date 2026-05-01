@@ -1,0 +1,28 @@
+.support-session-page {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.support-session-page h1 {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  color: #1e293b;
+}
+
+.support-session-page p {
+  color: #475569;
+  margin-bottom: 24px;
+}
+
+.support-session-page .support-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.support-session-page .btn {
+  padding: 10px 20px;
+  font-size: 1rem;
+}
