@@ -9,6 +9,7 @@ const PRESET = ["avatar2.jpg","avatar4.jpg","avatar5.jpg","avatar6.jpg","avatar8
 export default function CreateAccount() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
   const [avatar, setAvatar] = useState(PRESET[0]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,6 +19,7 @@ export default function CreateAccount() {
     e.preventDefault();
     setError("");
     if (username.trim().length < 3) return setError("Username must be at least 3 characters.");
+    if (!email.trim()) return setError("Email is required.");
     if (password.length < 6) return setError("Password must be at least 6 characters.");
 
     setLoading(true);
@@ -25,7 +27,12 @@ export default function CreateAccount() {
       const res = await fetch(`${API}/users/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password, avatar })
+        body: JSON.stringify({ 
+          username: username.trim(), 
+          password, 
+          avatar, 
+          email: email.trim()
+        })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -33,8 +40,23 @@ export default function CreateAccount() {
         setLoading(false);
         return;
       }
-      // store minimal session
-      localStorage.setItem("uplift_user", JSON.stringify({ username: data.username, avatar: data.avatar }));
+      
+      const userData = {
+        username: data.username,
+        avatar: data.avatar,
+        role: data.role || "user",
+        email: data.email || null,
+        user: {
+          username: data.username,
+          avatar: data.avatar,
+          role: data.role || "user",
+          email: data.email || null
+        }
+      };
+
+      localStorage.setItem("uplift_user", JSON.stringify(userData));
+      localStorage.setItem("username", data.username);
+      
       navigate("/");
     } catch (e) {
       console.error(e);
@@ -75,6 +97,11 @@ export default function CreateAccount() {
             <div className="field">
               <label>Decoy username</label>
               <input className="input" value={username} onChange={e=>setUsername(e.target.value)} placeholder="e.g. calm_mind" />
+            </div>
+
+            <div className="field">
+              <label>Email (required, for OTP resets)</label>
+              <input className="input" type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="e.g. your-email@domain.com" />
             </div>
 
             <div className="field">

@@ -1,9 +1,18 @@
-// src/components/NavBar.js
+// src/components/Navbar.js
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 
 export default function NavBar() {
   const loc = useLocation();
+
+  // Hide the navigation bar on authentication pages
+  const isAuthPage = 
+    loc.pathname === "/signin" || 
+    loc.pathname === "/signup" || 
+    loc.pathname === "/forgot-password";
+    
+  if (isAuthPage) return null;
+
   const user = (() => {
     try {
       return JSON.parse(localStorage.getItem("uplift_user") || "null");
@@ -12,92 +21,105 @@ export default function NavBar() {
     }
   })();
 
-  // Accept either { role } or { user: { role } } shapes
   const role = user?.role || user?.user?.role || null;
   const isAdmin = role === "admin";
 
   const handleLogout = () => {
     localStorage.removeItem("uplift_user");
-    // preserve the existing behaviour — full reload to reset app state
+    localStorage.removeItem("username");
     window.location.href = "/";
   };
 
+  const linkActiveStyle = (path) => {
+    const active = loc.pathname.startsWith(path);
+    return `text-sm font-semibold transition-colors duration-200 ${
+      active ? "text-blue-600 font-bold" : "text-slate-600 hover:text-slate-900"
+    }`;
+  };
+
   return (
-    <nav
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        padding: "10px 18px",
-        background: "#ffffff",
-        borderBottom: "1px solid #eef2f7",
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-      }}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <Link to="/">
-          <strong style={{ color: "#0f172a" }}>UPLIFT</strong>
-        </Link>
-
-        <Link
-          to="/communities"
-          style={{ color: loc.pathname.startsWith("/communities") ? "#0b5cff" : "#334155" }}
-        >
-          Communities
-        </Link>
-
-        <Link to="/success" style={{ color: loc.pathname === "/success" ? "#0b5cff" : "#334155" }}>
-          Success
-        </Link>
-
-        <Link to="/resources" style={{ color: loc.pathname === "/resources" ? "#0b5cff" : "#334155" }}>
-          Resources
-        </Link>
-
-        {/* Quick link for regular users to the Support area */}
-        <Link to="/support" style={{ color: loc.pathname.startsWith("/support") ? "#0b5cff" : "#334155" }}>
-          Support
-        </Link>
-
-        {/* Admin-only link */}
-        {isAdmin && (
-          <Link
-            to="/admin/support"
-            style={{
-              marginLeft: 8,
-              padding: "6px 8px",
-              background: "#0b5cff",
-              color: "#fff",
-              borderRadius: 6,
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            Admin Console
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        {/* Left Side: Brand Logo and Main Nav Links */}
+        <div className="flex items-center gap-8">
+          <Link to="/" className="flex items-center gap-2 group">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-cyan-500 font-extrabold text-white shadow-sm transition-transform duration-200 group-hover:scale-105">
+              UP
+            </div>
+            <span className="text-lg font-black tracking-wider text-slate-900 group-hover:text-blue-600 transition-colors">
+              UPLIFT
+            </span>
           </Link>
-        )}
-      </div>
 
-      <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-        {user ? (
-          <>
-            <span style={{ color: "#0f172a" }}>Hi, {user.username || user.user?.username}</span>
-            <button onClick={handleLogout} className="btn">
-              Logout
-            </button>
-          </>
-        ) : (
-          <>
-            <Link to="/signin" className="btn">
-              Sign In
+          <div className="hidden md:flex items-center gap-6">
+            <Link to="/community-chat" className={linkActiveStyle("/community-chat")}>
+              Communities
             </Link>
-            <Link to="/signup" className="btn btn-outline">
-              Sign Up
+            <Link to="/success" className={linkActiveStyle("/success")}>
+              Success Stories
             </Link>
-          </>
-        )}
+            <Link to="/resources" className={linkActiveStyle("/resources")}>
+              Resources
+            </Link>
+            <Link to="/support" className={linkActiveStyle("/support")}>
+              Get Support
+            </Link>
+
+            {isAdmin && (
+              <Link
+                to="/admin/support"
+                className="ml-2 rounded-md bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm hover:from-blue-700 hover:to-indigo-700 hover:shadow transition-all duration-200"
+              >
+                Admin Console
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* Right Side: User Profile & Auth Controls */}
+        <div className="flex items-center gap-4">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {user.avatar ? (
+                  <img
+                    src={user.avatar.startsWith("http") ? user.avatar : `/${user.avatar}`}
+                    alt="avatar"
+                    className="h-8 w-8 rounded-full border border-slate-200 object-cover"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700">
+                    {(user.username || "U").slice(0, 2).toUpperCase()}
+                  </div>
+                )}
+                <span className="hidden sm:inline text-sm font-medium text-slate-700">
+                  Hi, {user.username || user.user?.username}
+                </span>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="rounded-lg border border-slate-200 bg-white px-3.5 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition duration-200"
+              >
+                Logout
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/signin"
+                className="rounded-lg px-3.5 py-1.5 text-sm font-semibold text-slate-700 hover:text-slate-900 transition duration-200"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className="rounded-lg bg-blue-600 px-3.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition duration-200"
+              >
+                Sign Up
+              </Link>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );

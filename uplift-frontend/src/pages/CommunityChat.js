@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import "./CommunityChat.css";
 
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 const API_BASE = process.env.REACT_APP_API || "http://localhost:5000/api";
@@ -37,6 +36,20 @@ function normalizeMsg(m) {
 function makeClientId() {
   return `c_${Date.now()}_${Math.floor(Math.random()*900000)}`;
 }
+
+// Helper for dynamic persistent avatar colors
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-rose-500", "bg-pink-500", "bg-purple-500", "bg-indigo-500",
+    "bg-blue-500", "bg-cyan-500", "bg-teal-500", "bg-emerald-500",
+    "bg-amber-500", "bg-orange-500"
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
 
 export default function CommunityChat() {
   const { state } = useLocation();
@@ -288,65 +301,248 @@ export default function CommunityChat() {
   // UI
   if (error) {
     return (
-      <div style={{ padding: 20 }}>
-        <div style={{ color: "#b91c1c", marginBottom: 10 }}>Error: {error}</div>
-        <button className="btn" onClick={() => { setError(""); window.location.reload(); }}>Retry</button>
+      <div className="flex flex-col items-center justify-center min-h-[400px] bg-slate-50 text-slate-500 p-8">
+        <div className="p-3 bg-rose-50 rounded-full text-rose-500 mb-3 shadow-inner">
+          <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className="text-xs font-bold text-slate-800">Connection Error</h3>
+        <p className="text-[11px] text-slate-500 max-w-[240px] text-center mt-1 leading-normal">
+          {error}
+        </p>
+        <button
+          onClick={() => { setError(""); window.location.reload(); }}
+          className="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm transition"
+        >
+          Retry Connection
+        </button>
       </div>
     );
   }
-  if (!community) return <div style={{ padding: 20 }}>Loading community...</div>;
+
+  if (!community && loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-96 bg-slate-50 text-slate-500">
+        <div className="relative w-10 h-10 mb-4">
+          <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+        </div>
+        <p className="text-xs font-semibold">Loading community space...</p>
+      </div>
+    );
+  }
+
+  if (!community) return <div className="p-8 text-center text-xs text-slate-400">Loading community...</div>;
 
   return (
-    <div className="chat-container">
-      <header className="chat-header">
-        <div className="chat-header-left">
-          <div className="community-dp-small">{(community.name || "??").slice(0,2).toUpperCase()}</div>
-          <div>
-            <h3 className="chat-title" style={{ color: "#0f172a" }}>{community.name}</h3>
-            <div className="chat-sub">{membersCount} members</div>
+    <div className="flex bg-slate-50 font-sans w-full" style={{ height: "calc(100vh - 69px)" }}>
+      {/* Left Sidebar - Details & Members */}
+      <div className="w-80 border-r border-slate-200 flex flex-col bg-white h-full hidden lg:flex flex-shrink-0">
+        {/* Community Info */}
+        <div className="p-6 border-b border-slate-100 flex flex-col items-center flex-shrink-0">
+          <div className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold text-lg w-16 h-16 rounded-2xl flex items-center justify-center shadow-md mb-4">
+            {(community.name || "??").slice(0, 2).toUpperCase()}
           </div>
+          <h3 className="text-sm font-bold text-slate-800 text-center px-2 truncate w-full">
+            {community.name}
+          </h3>
+          <p className="text-[11px] text-slate-500 text-center mt-2 leading-relaxed max-h-24 overflow-y-auto px-1">
+            {community.description || "Welcome to our supportive space. Let's grow together!"}
+          </p>
+          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mt-3 w-fit">
+            {membersCount} members
+          </span>
         </div>
-        <div className="chat-header-right">
-          {/* navigate back to community listing page */}
-          <button className="btn" onClick={() => navigate('/community-chat')}>Back</button>
-        </div>
-      </header>
 
-      <div className="chat-box" role="log" aria-live="polite">
-        {grouped.map((g, idx) => {
-          const isMe = g.sender === username;
-          return (
-            <div key={idx} className={`chat-group ${isMe ? 'me' : 'other'}`}>
-              <div className="avatar">
-                {g.avatar ? <img src={g.avatar.startsWith('http') ? g.avatar : `/${g.avatar}`} alt={g.sender} className="avatar-img" /> :
-                  <div className="avatar-placeholder">{(g.sender||'U').slice(0,2).toUpperCase()}</div>}
-              </div>
-              <div className="bubble-col">
-                <div className="sender-line"><strong className="sender-name">{g.sender}</strong></div>
-                {g.items.map(it => (
-                  <div key={it._id || Math.random()} className={`chat-message ${isMe ? 'me' : 'other'}`}>
-                    <p className="chat-text">{it.text}</p>
-                    <div className="chat-time">{new Date(it.createdAt).toLocaleTimeString()}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-
-        {Array.from(typingUsers).length > 0 && (
-          <div className="typing-indicator">
-            {Array.from(typingUsers).join(", ")} typing…
+        {/* Rules section */}
+        {Array.isArray(community.rules) && community.rules.length > 0 && (
+          <div className="p-5 border-b border-slate-100 bg-slate-50/40 max-h-48 overflow-y-auto">
+            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+              Community Rules
+            </h4>
+            <ol className="list-decimal list-inside space-y-1.5">
+              {community.rules.map((rule, idx) => (
+                <li key={idx} className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+                  {rule}
+                </li>
+              ))}
+            </ol>
           </div>
         )}
 
-        <div ref={chatEndRef} />
+        {/* Member list section */}
+        <div className="p-4 border-b border-slate-100 flex-shrink-0">
+          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            Room Members
+          </h4>
+        </div>
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+          {Array.isArray(community.members) && community.members.length > 0 ? (
+            community.members.map((m, i) => {
+              const initials = String(m || "U").slice(0, 2).toUpperCase();
+              return (
+                <div key={i} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition duration-150">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] text-white shadow-sm flex-shrink-0 ${getAvatarColor(m || "anonymous")}`}>
+                    {initials}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-slate-700 truncate">{m}</p>
+                  </div>
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                </div>
+              );
+            })
+          ) : (
+            <div className="text-center text-[11px] text-slate-400 py-6">No members here yet.</div>
+          )}
+        </div>
+
+        {/* Leave button */}
+        <div className="p-4 border-t border-slate-100 flex-shrink-0">
+          <button
+            onClick={() => navigate('/community-chat')}
+            className="w-full py-2 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 hover:border-rose-100 font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2"
+          >
+            <span>🚪</span> Leave Room
+          </button>
+        </div>
       </div>
 
-      <form className="chat-form" onSubmit={handleSend}>
-        <input value={msg} onChange={(e) => handleTyping(e.target.value)} placeholder={username ? "Write a message..." : "Sign in to chat"} disabled={!username} />
-        <button type="submit" className="btn send" disabled={!username || !msg.trim()}>Send</button>
-      </form>
+      {/* Right Panel - Chat Workspace */}
+      <div className="flex-1 flex flex-col h-full bg-slate-50">
+        {/* Chat Header */}
+        <header className="h-14 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/community-chat')}
+              className="lg:hidden p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition mr-1"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-xs text-white shadow-sm flex-shrink-0">
+              {(community.name || "??").slice(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <h3 className="text-xs font-bold text-slate-800 leading-tight">
+                {community.name}
+              </h3>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-[9px] text-slate-400 font-medium">{membersCount} members</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Current User Badge */}
+          {username && (
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+              <div className={`w-5 h-5 rounded-full ${getAvatarColor(username)} flex items-center justify-center text-[9px] font-bold text-white shadow-sm`}>
+                {String(username).slice(0, 1).toUpperCase()}
+              </div>
+              <span className="text-[10px] font-semibold text-slate-600 truncate max-w-[80px]">
+                {username}
+              </span>
+            </div>
+          )}
+        </header>
+
+        {/* Messages list */}
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-slate-50/50">
+          {grouped.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-slate-400">
+              <svg className="w-12 h-12 text-slate-300 mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              <p className="text-xs">No messages yet. Say hello to get started!</p>
+            </div>
+          ) : (
+            grouped.map((g, idx) => {
+              const isMe = g.sender === username;
+              const initials = String(g.sender || "U").slice(0, 1).toUpperCase();
+
+              return (
+                <div
+                  key={idx}
+                  className={`flex items-start gap-2.5 ${isMe ? "flex-row-reverse" : ""}`}
+                >
+                  {/* Sender Avatar */}
+                  <div
+                    className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm flex-shrink-0 ${
+                      isMe ? "bg-indigo-600" : getAvatarColor(g.sender || "user")
+                    }`}
+                    style={isMe ? { backgroundColor: "#4f46e5" } : {}}
+                  >
+                    {initials}
+                  </div>
+
+                  <div className={`max-w-[70%] ${isMe ? "text-right" : ""}`}>
+                    <span className="text-[9px] text-slate-400 font-medium px-1 block mb-0.5">
+                      {g.sender}
+                    </span>
+                    <div className="space-y-1 inline-flex flex-col items-end">
+                      {g.items.map(it => (
+                        <div
+                          key={it._id || Math.random()}
+                          className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm block text-left ${
+                            isMe
+                              ? "bg-indigo-600 text-white rounded-tr-none"
+                              : "bg-white border border-slate-100 text-slate-800 rounded-tl-none"
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap">{it.text}</p>
+                          <span className={`text-[8px] block mt-1 text-right ${isMe ? "text-indigo-200" : "text-slate-400"}`}>
+                            {new Date(it.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          {/* Typing Indicator */}
+          {Array.from(typingUsers).length > 0 && (
+            <div className="flex items-center gap-1 text-[10px] text-slate-400 italic px-2 py-1 bg-white border border-slate-100 rounded-full w-fit shadow-sm animate-pulse">
+              <span className="flex gap-0.5">
+                <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce"></span>
+                <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+              </span>
+              <span>{Array.from(typingUsers).join(", ")} typing...</span>
+            </div>
+          )}
+
+          <div ref={chatEndRef} />
+        </div>
+
+        {/* Message Input Form */}
+        <div className="p-3 border-t border-slate-200 bg-white">
+          <form onSubmit={handleSend} className="flex gap-2">
+            <input
+              type="text"
+              value={msg}
+              onChange={(e) => handleTyping(e.target.value)}
+              placeholder={username ? "Write a message..." : "Sign in to chat"}
+              disabled={!username}
+              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400 transition"
+            />
+            <button
+              type="submit"
+              disabled={!username || !msg.trim()}
+              className="h-8 px-4 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-3.5 h-3.5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

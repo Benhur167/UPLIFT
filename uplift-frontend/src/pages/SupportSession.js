@@ -1,8 +1,7 @@
 // src/pages/SupportSession.js
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
-import "./SupportSession.css"; // keep your styles
 
 const API = process.env.REACT_APP_API;
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
@@ -15,32 +14,60 @@ function getStoredUser() {
   }
 }
 
+// Predefined hourly time slots
+const TIME_SLOTS = [
+  { label: "09:00 AM - 10:00 AM", start: "09:00:00", end: "10:00:00" },
+  { label: "10:00 AM - 11:00 AM", start: "10:00:00", end: "11:00:00" },
+  { label: "11:00 AM - 12:00 PM", start: "11:00:00", end: "12:00:00" },
+  { label: "01:00 PM - 02:00 PM", start: "13:00:00", end: "14:00:00" },
+  { label: "02:00 PM - 03:00 PM", start: "14:00:00", end: "15:00:00" },
+  { label: "03:00 PM - 04:00 PM", start: "15:00:00", end: "16:00:00" },
+  { label: "04:00 PM - 05:00 PM", start: "16:00:00", end: "17:00:00" },
+];
+
+// Helper for dynamic persistent avatar colors
+const getAvatarColor = (name) => {
+  const colors = [
+    "bg-rose-500", "bg-pink-500", "bg-purple-500", "bg-indigo-500",
+    "bg-blue-500", "bg-cyan-500", "bg-teal-500", "bg-emerald-500",
+    "bg-amber-500", "bg-orange-500"
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
+};
+
 export default function SupportSession() {
   const { id } = useParams();
-  const { state } = useLocation();
   const navigate = useNavigate();
   const stored = getStoredUser();
 
-  // Session and booking state (your existing fields)
-  const [session, setSession] = useState(state?.session || null);
+  // Session and booking state
+  const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(false);
   const [callPhone, setCallPhone] = useState("");
   const [preferredAt, setPreferredAt] = useState("");
-  const [booking, setBooking] = useState({
-    psychiatristId: "",
-    slotStart: "",
-    slotEnd: "",
-  });
+  
+  // Custom states for simplified slots
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingSlotIndex, setBookingSlotIndex] = useState("");
+  const [booking, setBooking] = useState({ psychiatristId: "" });
+
+  // Custom inline warning state variables
+  const [phoneError, setPhoneError] = useState("");
+  const [bookingError, setBookingError] = useState("");
+  
   const [statusMsg, setStatusMsg] = useState("");
   const [socketConnected, setSocketConnected] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Chat-specific state
   const [messages, setMessages] = useState([]); // { senderId, text, createdAt }
   const [text, setText] = useState("");
   const [adminOnline, setAdminOnline] = useState(false);
   const [adminTyping, setAdminTyping] = useState(false);
-  const [callRequested, setCallRequested] = useState(false);
-  const [showChat, setShowChat] = useState(false); // NEW: toggle chat widget
 
   const socketRef = useRef(null);
   const messagesRef = useRef(null);
@@ -51,6 +78,7 @@ export default function SupportSession() {
 
   // fetch session helper
   const fetchSession = async () => {
+    setRefreshing(true);
     try {
       const res = await fetch(`${API}/support/session/${id}`);
       if (!res.ok) throw new Error("failed to load");
@@ -61,14 +89,20 @@ export default function SupportSession() {
         setMessages(
           data.messages.map((m) => ({
             senderId: m.sender || m.senderId,
+            senderName: m.senderName || (m.sender === userId ? stored?.username : "support"),
             text: m.text,
             createdAt: m.createdAt || m.created_at,
           }))
         );
       }
-      if (data?.requestedCall) setCallRequested(true);
+      setStatusMsg("Data refreshed successfully!");
+      setTimeout(() => setStatusMsg(""), 3000);
     } catch (e) {
       console.error(e);
+      setStatusMsg("Failed to refresh data.");
+      setTimeout(() => setStatusMsg(""), 3000);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -78,8 +112,8 @@ export default function SupportSession() {
       return;
     }
 
-    // initial fetch if state not provided
-    if (!session) fetchSession();
+    // initial fetch
+    fetchSession();
 
     // setup socket
     const socket = io(SOCKET_URL, {
@@ -89,11 +123,8 @@ export default function SupportSession() {
 
     socket.on("connect", () => {
       setSocketConnected(true);
-      // join both legacy and new room names (server may expect joinRoom or join_support_session)
       socket.emit("joinRoom", { roomId: id, username: stored?.username || userId });
       socket.emit("join_support_session", { sessionId: id, userId });
-
-      // announce presence for admins to see
       socket.emit("user_joined", { sessionId: id, userId });
     });
 
@@ -102,20 +133,13 @@ export default function SupportSession() {
       setAdminOnline(false);
     });
 
-    // Incoming message (two possible event names handled)
-    // replace your existing handleIncoming with this
     const handleIncoming = (payload) => {
       if (!payload) return;
-      // filter by session
       if (payload.sessionId && String(payload.sessionId) !== String(id)) return;
 
-      // debug
-      console.log("📩 Incoming support:message", payload);
+      console.log("Incoming message:", payload);
 
       setMessages((prev) => {
-        console.log("📝 Current messages before update", prev);
-
-        // 1) If server provides clientId -> find stub by clientId and replace it
         if (payload.clientId) {
           const idx = prev.findIndex(m => m.clientId && m.clientId === payload.clientId);
           if (idx !== -1) {
@@ -128,40 +152,26 @@ export default function SupportSession() {
               text: payload.text ?? next[idx].text,
               createdAt: payload.createdAt ?? next[idx].createdAt
             };
-            console.log("✅ Replaced optimistic stub by clientId:", next[idx]);
             return next;
           }
         }
 
-        // 2) If server message has an _id that already exists in state -> ignore (duplicate)
         if (payload._id && prev.some(m => m._id && String(m._id) === String(payload._id))) {
-          console.log("⚠️ Duplicate ignored (same _id)", payload._id);
           return prev;
         }
 
-        // 3) If payload has clientId and a message with that clientId already exists -> ignore
         if (payload.clientId && prev.some(m => m.clientId && m.clientId === payload.clientId)) {
-          console.log("⚠️ Duplicate ignored (same clientId)", payload.clientId);
           return prev;
         }
 
-        // 4) Heuristic fallback: server didn't include clientId.
-        //    Try to find a recent optimistic stub from this user with identical text and close timestamp.
-        //    If found, replace it with the server canonical message to avoid double display.
         if (!payload.clientId) {
-          // parse server createdAt (if string) to time number
           const serverTime = payload.createdAt ? new Date(payload.createdAt).getTime() : Date.now();
-          // Find index of candidate stub: same sender (or same userId), same text, and created within 6s
           const heurIdx = prev.findIndex(m => {
-            // only match optimistic stubs (they have clientId OR no _id)
             const isStub = !!m.clientId || !m._id;
             if (!isStub) return false;
-            // sender match — prefer match to local userId
             const sameSender = (String(m.senderId) === String(payload.senderId)) || (String(m.senderId) === String(userId) && (payload.senderId == null || String(payload.senderId) === String(userId)));
             if (!sameSender) return false;
-            // text equality
             if ((m.text || "").trim() !== (payload.text || "").trim()) return false;
-            // time closeness (6 seconds)
             const localTime = m.createdAt ? new Date(m.createdAt).getTime() : 0;
             return Math.abs(serverTime - localTime) <= 6000;
           });
@@ -176,18 +186,15 @@ export default function SupportSession() {
               text: payload.text || next[heurIdx].text,
               createdAt: payload.createdAt || next[heurIdx].createdAt || new Date().toISOString()
             };
-            console.log("🔁 Heuristic replaced optimistic stub with server message:", next[heurIdx]);
             return next;
           }
         }
 
-        // 5) No match — append normally
-        console.log("➕ Appending new message", payload);
         return [...prev, {
           _id: payload._id,
           clientId: payload.clientId || null,
           senderId: payload.senderId,
-          senderName: payload.senderName,
+          senderName: payload.senderName || "support",
           text: payload.text,
           createdAt: payload.createdAt || new Date().toISOString()
         }];
@@ -199,7 +206,6 @@ export default function SupportSession() {
     socket.on("support_message", handleIncoming);
     socket.on("support:message", handleIncoming);
 
-    // Admin presence / typing
     socket.on("admin_joined", (p) => {
       if (p?.sessionId && String(p.sessionId) !== String(id)) return;
       setAdminOnline(true);
@@ -215,7 +221,6 @@ export default function SupportSession() {
       typingTimerRef.current = setTimeout(() => setAdminTyping(false), 1500);
     });
 
-    // session updates from server
     socket.on("support:sessionUpdated", (payload) => {
       if (payload && String(payload._id) === String(id)) {
         setSession(payload);
@@ -225,7 +230,7 @@ export default function SupportSession() {
     socket.on("support:callRequested", (payload) => {
       if (payload && String(payload.sessionId) === String(id)) {
         setStatusMsg("Call request received by support.");
-        setCallRequested(true);
+        fetchSession();
       }
     });
     socket.on("support:bookingCreated", (payload) => {
@@ -235,7 +240,7 @@ export default function SupportSession() {
       }
     });
 
-    // fetch historical messages if server provides a dedicated endpoint
+    // fetch historical messages
     (async () => {
       try {
         const res = await fetch(`${API}/support/session/${id}/messages`, {
@@ -252,7 +257,9 @@ export default function SupportSession() {
           if (Array.isArray(d.messages)) {
             setMessages(
               d.messages.map((m) => ({
+                _id: m._id,
                 senderId: m.sender || m.senderId,
+                senderName: m.senderName || (m.sender === userId ? stored?.username : "support"),
                 text: m.text,
                 createdAt: m.createdAt || m.created_at,
               }))
@@ -260,8 +267,8 @@ export default function SupportSession() {
             scrollToBottom();
           }
         }
-      } catch {
-        // ignore — not required
+      } catch (err) {
+        console.error(err);
       }
     })();
 
@@ -277,21 +284,22 @@ export default function SupportSession() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
-  // auto-scroll
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
       if (messagesRef.current) messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     });
   };
 
-  // send message
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, adminTyping]);
+
   const sendMessage = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    const payload = { sessionId: id, message: trimmed, senderId: userId };
-    // emit both event name possibilities; server may handle one or the other
+    const payload = { sessionId: id, message: trimmed, senderId: userId, senderName: stored?.username || "user" };
     try {
       socketRef.current?.emit("support_message", payload);
       socketRef.current?.emit("support:message", payload);
@@ -299,12 +307,10 @@ export default function SupportSession() {
       console.error("socket emit failed", e);
     }
 
-    // optimistic UI
-    setMessages((m) => [...m, { senderId: userId, text: trimmed, createdAt: new Date().toISOString() }]);
+    setMessages((m) => [...m, { senderId: userId, senderName: stored?.username || "user", text: trimmed, createdAt: new Date().toISOString() }]);
     setText("");
     scrollToBottom();
 
-    // optional: persist via REST fallback (if socket down)
     if (!socketConnected) {
       (async () => {
         try {
@@ -320,12 +326,10 @@ export default function SupportSession() {
     }
   };
 
-  // notify server that user is typing (debounced)
   const notifyTyping = () => {
     try {
       if (!socketRef.current) return;
       socketRef.current.emit("user_typing", { sessionId: id, userId });
-      // throttle typing emits so it's not spammy
       clearTimeout(notifyTypingTimerRef.current);
       notifyTypingTimerRef.current = setTimeout(() => {
         try {
@@ -335,17 +339,16 @@ export default function SupportSession() {
     } catch (e) {}
   };
 
-  // existing call request (keeps x-username header to match your backend)
   const createCallRequest = async () => {
     if (!stored || !stored.username) {
-      alert("Please sign in to request a call.");
-      navigate("/signin");
+      setPhoneError("Please sign in to request a call.");
       return;
     }
-    if (!callPhone) {
-      alert("Enter a phone number.");
+    if (!callPhone.trim()) {
+      setPhoneError("Please enter a valid phone number.");
       return;
     }
+    setPhoneError("");
     setLoading(true);
     setStatusMsg("");
     try {
@@ -366,29 +369,31 @@ export default function SupportSession() {
       }
       const data = await res.json();
       setSession(data.session || session);
-      setStatusMsg("Call requested. The team has been notified.");
-      // broadcast to room if socket alive
+      setStatusMsg("Call requested successfully!");
       socketRef.current?.emit("support:callRequested", { sessionId: id });
-      setCallRequested(true);
     } catch (e) {
       console.error(e);
-      setStatusMsg(e.message || "Call request failed");
+      setPhoneError(e.message || "Call request failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // booking flow (keeps your header usage)
   const createBooking = async () => {
     if (!stored || !stored.username) {
-      alert("Please sign in to book.");
-      navigate("/signin");
+      setBookingError("Please sign in to book.");
       return;
     }
-    if (!booking.psychiatristId || !booking.slotStart || !booking.slotEnd) {
-      alert("Choose psychiatrist and slot start/end.");
+    if (!booking.psychiatristId || !bookingDate || bookingSlotIndex === "") {
+      setBookingError("Please select a specialist, date, and preferred time slot.");
       return;
     }
+    setBookingError("");
+
+    const selectedSlot = TIME_SLOTS[Number(bookingSlotIndex)];
+    const slotStart = `${bookingDate}T${selectedSlot.start}`;
+    const slotEnd = `${bookingDate}T${selectedSlot.end}`;
+
     setLoading(true);
     setStatusMsg("");
     try {
@@ -400,8 +405,8 @@ export default function SupportSession() {
         },
         body: JSON.stringify({
           psychiatristId: booking.psychiatristId,
-          slotStart: booking.slotStart,
-          slotEnd: booking.slotEnd,
+          slotStart,
+          slotEnd,
         }),
       });
       if (!res.ok) {
@@ -410,290 +415,355 @@ export default function SupportSession() {
       }
       const data = await res.json();
       setSession(data.session || session);
-      setStatusMsg("Booking created. We'll confirm shortly.");
-      // notify via socket
+      setStatusMsg("Booking created successfully!");
       socketRef.current?.emit("support:bookingCreated", { sessionId: id });
+      
+      // Reset booking inputs
+      setBookingDate("");
+      setBookingSlotIndex("");
+      setBooking({ psychiatristId: "" });
     } catch (e) {
       console.error(e);
-      setStatusMsg(e.message || "Booking failed");
+      setBookingError(e.message || "Booking failed");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="support-session-page">
-      <header className="hero">
-        <h1>Support Session</h1>
-        <p>
-          Session ID: {id}{" "}
-          {socketConnected ? (
-            <span style={{ color: "#059669" }}>● live</span>
-          ) : (
-            <span style={{ color: "#c2410c" }}>● offline</span>
-          )}
-        </p>
-      </header>
-
-      <div style={{ maxWidth: 900, margin: "18px auto" }}>
-        <div
-          style={{
-            background: "#fff",
-            padding: 14,
-            borderRadius: 8,
-            boxShadow: "0 1px 4px rgba(2,6,23,0.04)",
-          }}
-        >
-          <h3 style={{ marginTop: 0 }}>
-            {session?.userName ? `Requested by ${session.userName}` : "Your session"}
-          </h3>
-          <div style={{ color: "#475569", marginBottom: 8 }}>
-            Status: <strong>{session?.status || "open"}</strong>
+    <div className="min-h-screen bg-slate-50/40 font-sans">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* Navigation back and header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <button
+              onClick={() => navigate("/support")}
+              className="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition mb-2"
+            >
+              &larr; Back to Support
+            </button>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center flex-wrap gap-2.5">
+              <span>Support Session Workspace</span>
+              <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm self-center leading-none ${
+                socketConnected ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+              }`} style={{ transform: "translateY(1px)" }}>
+                <span className={`h-1.5 w-1.5 rounded-full ${socketConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`}></span>
+                {socketConnected ? "Live" : "Offline"}
+              </span>
+            </h1>
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: 12,
-            }}
-          >
-            <div>
-              <h4>Request a Call</h4>
-              <input value={callPhone} onChange={(e) => setCallPhone(e.target.value)} placeholder="Phone number" />
-              <input value={preferredAt} onChange={(e) => setPreferredAt(e.target.value)} type="datetime-local" />
-              <div style={{ marginTop: 8 }}>
-                <button className="btn primary" onClick={createCallRequest} disabled={loading}>
-                  Request Call
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h4>Book a Psychiatrist Session</h4>
-              <select
-                value={booking.psychiatristId}
-                onChange={(e) => setBooking((b) => ({ ...b, psychiatristId: e.target.value }))}
-              >
-                <option value="">Choose therapist</option>
-                <option value="doc-1">Dr. Anya N (Therapist)</option>
-                <option value="doc-2">Dr. Samir R (Psychiatrist)</option>
-              </select>
-              <input
-                type="datetime-local"
-                value={booking.slotStart}
-                onChange={(e) => setBooking((b) => ({ ...b, slotStart: e.target.value }))}
-              />
-              <input
-                type="datetime-local"
-                value={booking.slotEnd}
-                onChange={(e) => setBooking((b) => ({ ...b, slotEnd: e.target.value }))}
-              />
-              <div style={{ marginTop: 8 }}>
-                <button className="btn primary" onClick={createBooking} disabled={loading}>
-                  Book Slot
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <hr style={{ margin: "12px 0" }} />
-
-          <div>
-  <h4>Session details</h4>
-
-  <div style={{ fontSize: 14, color: "#334155" }}>
-    <div>
-      <strong>Created at:</strong>{" "}
-      {session?.createdAt
-        ? new Date(session.createdAt).toLocaleString()
-        : "—"}
-    </div>
-
-    {/* --- Call Request Details --- */}
-    <div style={{ marginTop: 10 }}>
-      <strong>Call request:</strong>{" "}
-      {session?.requestedCall ? (
-        <div
-          style={{
-            background: "#f9fafb",
-            border: "1px solid #e2e8f0",
-            borderRadius: 8,
-            padding: "8px 10px",
-            marginTop: 6,
-            lineHeight: 1.6,
-          }}
-        >
-          <div><strong>Phone:</strong> {session.requestedCall.phone || "—"}</div>
-          <div><strong>Status:</strong> {session.requestedCall.status || "pending"}</div>
-          {session.requestedCall.preferredAt && (
-            <div>
-              <strong>Preferred Time:</strong>{" "}
-              {new Date(session.requestedCall.preferredAt).toLocaleString()}
-            </div>
-          )}
-          {session.requestedCall.adminAssigned && (
-            <div><strong>Assigned to:</strong> {session.requestedCall.adminAssigned}</div>
-          )}
-          <div>
-            <strong>Requested at:</strong>{" "}
-            {new Date(session.requestedCall.createdAt).toLocaleString()}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchSession}
+              disabled={refreshing}
+              className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 active:bg-slate-100 disabled:opacity-60 transition flex items-center gap-1.5"
+            >
+              {refreshing ? (
+                <>
+                  <svg className="animate-spin h-3 w-3 text-slate-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Refreshing...</span>
+                </>
+              ) : (
+                <>
+                  <span>Refresh Data</span>
+                </>
+              )}
+            </button>
+            <span className="text-[11px] text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded">ID: {id?.slice(-8)}</span>
           </div>
         </div>
-      ) : (
-        <span>None</span>
-      )}
-    </div>
 
-    {/* --- Booking Details --- */}
-    <div style={{ marginTop: 14 }}>
-      <strong>Bookings:</strong>
-      {Array.isArray(session?.bookings) && session.bookings.length > 0 ? (
-        <div style={{ marginTop: 6 }}>
-          {session.bookings.map((b, i) => (
-            <div
-              key={i}
-              style={{
-                background: "#f1f5f9",
-                border: "1px solid #cbd5e1",
-                borderRadius: 8,
-                padding: "8px 10px",
-                marginBottom: 8,
-              }}
-            >
-              <div><strong>Psychiatrist:</strong> {b.psychiatristName || b.psychiatristId || "—"}</div>
-              <div>
-                <strong>From:</strong>{" "}
-                {b.slotStart ? new Date(b.slotStart).toLocaleString() : "—"}
+        {statusMsg && (
+          <div className="mb-6 p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{statusMsg}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left panel: Forms and history (7 cols) */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* Call Callback Request Card */}
+            <div className="bg-white border border-slate-100 shadow-xl shadow-slate-100/40 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Request Callback</h3>
+                  <p className="text-[10px] text-slate-400">Request a phone call callback from UPLIFT support team</p>
+                </div>
               </div>
-              <div>
-                <strong>To:</strong>{" "}
-                {b.slotEnd ? new Date(b.slotEnd).toLocaleString() : "—"}
-              </div>
-              {b.status && (
-                <div><strong>Status:</strong> {b.status}</div>
+
+              {phoneError && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{phoneError}</span>
+                </div>
+              )}
+
+              {session?.requestedCall ? (
+                <div className="bg-amber-50/40 border border-amber-200 rounded-xl p-4 leading-relaxed text-xs text-slate-700">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div><strong>Phone:</strong> {session.requestedCall.phone}</div>
+                    <div><strong>Status:</strong> <span className="font-bold text-amber-800 uppercase text-[9px] bg-amber-100 px-1.5 py-0.5 rounded">{session.requestedCall.status}</span></div>
+                    <div><strong>Preferred Time:</strong> {session.requestedCall.preferredAt ? new Date(session.requestedCall.preferredAt).toLocaleString() : "As soon as possible"}</div>
+                    {session.requestedCall.adminAssigned && <div><strong>Assigned Support:</strong> {session.requestedCall.adminAssigned}</div>}
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-slate-600">Phone Number</label>
+                      <input
+                        type="tel"
+                        value={callPhone}
+                        onChange={(e) => setCallPhone(e.target.value)}
+                        placeholder="e.g. +1 555-0199"
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 rounded-lg text-xs"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[11px] font-semibold text-slate-600">Preferred Time (Optional)</label>
+                      <input
+                        type="datetime-local"
+                        value={preferredAt}
+                        onChange={(e) => setPreferredAt(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 rounded-lg text-xs text-slate-700"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    onClick={createCallRequest}
+                    disabled={loading}
+                    className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs shadow-sm transition disabled:opacity-50"
+                  >
+                    Submit Call Request
+                  </button>
+                </div>
               )}
             </div>
-          ))}
-        </div>
-      ) : (
-        <div style={{ marginTop: 6, color: "#64748b" }}>No bookings yet.</div>
-      )}
-    </div>
-  </div>
-</div>
 
-
-          {statusMsg && <div style={{ marginTop: 12, color: "#065f46" }}>{statusMsg}</div>}
-        </div>
-
-        <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
-          <button className="btn secondary" onClick={() => navigate("/support")}>
-            Back to Support
-          </button>
-          <button className="btn" onClick={fetchSession}>
-            Refresh
-          </button>
-        </div>
-
-        {/* Floating Chat Button + Chat Box */}
-        <div style={{ position: "fixed", bottom: 20, right: 20, zIndex: 1000 }}>
-          {!showChat ? (
-            <button
-              className="btn primary"
-              onClick={() => setShowChat(true)}
-              style={{ borderRadius: "50%", width: 60, height: 60, fontSize: 20 }}
-              aria-label="Open chat with support"
-            >
-              💬
-            </button>
-          ) : (
-            <div
-              role="dialog"
-              aria-label="Support chat"
-              style={{
-                width: 340,
-                height: 460,
-                background: "#fff",
-                border: "1px solid #ddd",
-                borderRadius: 8,
-                boxShadow: "0 6px 18px rgba(0,0,0,0.12)",
-                display: "flex",
-                flexDirection: "column",
-              }}
-            >
-              <div
-                style={{
-                  padding: "8px 12px",
-                  borderBottom: "1px solid #eee",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 12,
-                }}
-              >
-                <strong>Support Chat</strong>
-                <div style={{ fontSize: 12, color: "#475569", flex: 1, textAlign: "center" }}>
-                  {adminOnline ? <span style={{ color: "#059669" }}>Admin online</span> : <span>Admin offline</span>}
-                  {adminTyping && <span style={{ marginLeft: 8, fontStyle: "italic" }}>typing…</span>}
+            {/* Book Psychiatrist Card */}
+            <div className="bg-white border border-slate-100 shadow-xl shadow-slate-100/40 rounded-2xl p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                 </div>
-                <button onClick={() => setShowChat(false)} aria-label="Close chat" style={{ marginLeft: 8 }}>
-                  ✕
-                </button>
+                <div>
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Book Psychiatrist / Therapist</h3>
+                  <p className="text-[10px] text-slate-400">Schedule video sessions with professional therapists</p>
+                </div>
               </div>
 
+              {bookingError && (
+                <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+                  <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{bookingError}</span>
+                </div>
+              )}
+
+              <div className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-slate-600">Choose Specialist</label>
+                    <select
+                      value={booking.psychiatristId}
+                      onChange={(e) => setBooking({ psychiatristId: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-800"
+                    >
+                      <option value="">Choose therapist</option>
+                      <option value="doc-1">Dr. Anya N (Therapist)</option>
+                      <option value="doc-2">Dr. Samir R (Psychiatrist)</option>
+                    </select>
+                  </div>
+                  
+                  {/* Predefined single Date selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-slate-600">Choose Date</label>
+                    <input
+                      type="date"
+                      value={bookingDate}
+                      onChange={(e) => setBookingDate(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-700"
+                    />
+                  </div>
+
+                  {/* Predefined hourly Slot selector */}
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[11px] font-semibold text-slate-600">Preferred Time Slot</label>
+                    <select
+                      value={bookingSlotIndex}
+                      onChange={(e) => setBookingSlotIndex(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-800"
+                    >
+                      <option value="">Choose time slot</option>
+                      {TIME_SLOTS.map((s, idx) => (
+                        <option key={idx} value={idx}>{s.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={createBooking}
+                  disabled={loading}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs shadow-sm transition disabled:opacity-50"
+                >
+                  Book Appointment Slot
+                </button>
+
+                {/* Bookings History list */}
+                {Array.isArray(session?.bookings) && session.bookings.length > 0 && (
+                  <div className="pt-4 border-t border-slate-100">
+                    <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Bookings History</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {session.bookings.map((b, i) => (
+                        <div key={i} className="bg-slate-50 border border-slate-150 rounded-xl p-3 leading-relaxed text-xs text-slate-600">
+                          <div><strong>Specialist:</strong> {b.psychiatristName || b.psychiatristId}</div>
+                          <div><strong>From:</strong> {b.slotStart ? new Date(b.slotStart).toLocaleString() : "—"}</div>
+                          <div><strong>To:</strong> {b.slotEnd ? new Date(b.slotEnd).toLocaleString() : "—"}</div>
+                          {b.status && (
+                            <div className="mt-1">
+                              Status: <span className="font-bold uppercase text-[9px] bg-slate-200 px-1 rounded">{b.status}</span>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right panel: Integrated chat console (5 cols) */}
+          <div className="lg:col-span-5 h-[580px] lg:h-[640px] flex flex-col">
+            <div className="bg-white border border-slate-200 shadow-xl shadow-slate-150/40 rounded-2xl flex flex-col h-full overflow-hidden">
+              {/* Chat Header */}
+              <div className="px-4 py-3 border-b border-slate-150 bg-white flex items-center justify-between flex-shrink-0 shadow-sm z-10">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-slate-800 leading-tight">Live Support Chat</h3>
+                    <div className="flex items-center gap-1 mt-0.5">
+                      <span className={`h-1.5 w-1.5 rounded-full ${adminOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}></span>
+                      <span className="text-[9px] text-slate-400 font-semibold">{adminOnline ? "Moderator online" : "Moderator offline"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chat Messages */}
               <div
                 ref={messagesRef}
-                style={{
-                  flex: 1,
-                  overflowY: "auto",
-                  padding: 10,
-                  background: "#fafafa",
-                }}
+                className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50"
               >
-                {messages.length === 0 && <div style={{ color: "#666" }}>No messages yet. Say hi 👋</div>}
-                {messages.map((m, i) => {
-                  const mine = String(m.senderId) === String(userId);
-                  return (
-                    <div key={i} style={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start", marginBottom: 8 }}>
+                {messages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center px-4">
+                    <span className="text-2xl mb-1">👋</span>
+                    <p className="text-xs">No messages yet. Send a message to introduce yourself to support.</p>
+                  </div>
+                ) : (
+                  messages.map((m, i) => {
+                    const isMine = String(m.senderId) === String(userId);
+                    const initial = String(m.senderName || (isMine ? "U" : "S")).slice(0, 1).toUpperCase();
+
+                    return (
                       <div
-                        style={{
-                          maxWidth: "75%",
-                          padding: "8px 10px",
-                          borderRadius: 8,
-                          background: mine ? "#DCF8C6" : "#fff",
-                          boxShadow: "0 0 0 1px rgba(0,0,0,0.02)",
-                        }}
+                        key={m._id || i}
+                        className={`flex items-start gap-2 ${isMine ? "flex-row-reverse" : ""}`}
                       >
-                        <div style={{ fontSize: 14 }}>{m.text}</div>
-                        <div style={{ fontSize: 11, color: "#888", marginTop: 6, textAlign: "right" }}>
-                          {new Date(m.createdAt).toLocaleTimeString()}
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm flex-shrink-0 ${
+                            isMine ? "bg-indigo-600" : getAvatarColor(m.senderName || "support")
+                          }`}
+                        >
+                          {initial}
+                        </div>
+                        <div className={`max-w-[75%] ${isMine ? "text-right" : ""}`}>
+                          {!isMine && (
+                            <span className="text-[9px] text-slate-400 font-medium px-1 block mb-0.5">
+                              {m.senderName}
+                            </span>
+                          )}
+                          <div
+                            className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm inline-block text-left ${
+                              isMine
+                                ? "bg-indigo-600 text-white rounded-tr-none"
+                                : "bg-white border border-slate-100 text-slate-800 rounded-tl-none"
+                            }`}
+                          >
+                            {m.text}
+                          </div>
+                          <span className="text-[8px] text-slate-400 block mt-0.5 px-1">
+                            {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </span>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
 
-              <form onSubmit={sendMessage} style={{ display: "flex", gap: 8, padding: 10, borderTop: "1px solid #eee" }}>
-                <input
-                  value={text}
-                  onChange={(e) => {
-                    setText(e.target.value);
-                    notifyTyping();
-                  }}
-                  placeholder="Type your message…"
-                  aria-label="Type your message"
-                  style={{ flex: 1, padding: "10px 12px", borderRadius: 6, border: "1px solid #ddd" }}
-                />
-                <button className="btn primary" type="submit" aria-label="Send message">
-                  Send
-                </button>
-              </form>
+              {/* Chat Input */}
+              <div className="p-3 border-t border-slate-200 bg-white flex-shrink-0">
+                {adminTyping && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 italic mb-1.5 px-1">
+                    <span className="flex gap-0.5">
+                      <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce"></span>
+                      <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
+                      <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></span>
+                    </span>
+                    <span>Support moderator is typing...</span>
+                  </div>
+                )}
+
+                <form onSubmit={sendMessage} className="flex gap-2">
+                  <input
+                    value={text}
+                    onChange={(e) => {
+                      setText(e.target.value);
+                      notifyTyping();
+                    }}
+                    placeholder="Type your message..."
+                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400 transition"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!text.trim()}
+                    className="h-8 px-4 flex items-center justify-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-3.5 h-3.5 transform rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </form>
+              </div>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

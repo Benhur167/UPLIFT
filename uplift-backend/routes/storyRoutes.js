@@ -143,7 +143,13 @@ router.get('/similar-success', async (req, res) => {
 
     scored.sort((a, b) => b.score - a.score);
     const THRESHOLD = 0.05; // allow weaker matches
-    const results = scored.filter(x => x.score >= THRESHOLD).slice(0, 12).map(x => x.s);
+    let results = scored.filter(x => x.score >= THRESHOLD).slice(0, 12).map(x => x.s);
+
+    // Fallback: If no similar stories are matched, return the 6 most recent success stories
+    if (results.length === 0) {
+      results = await Story.find({ type: 'success' }).sort({ createdAt: -1 }).limit(6);
+    }
+
     res.json(results);
   } catch (e) {
     console.error('GET /api/stories/similar-success error', e);

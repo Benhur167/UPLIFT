@@ -48,7 +48,8 @@ module.exports = async function authCheck(req, res, next) {
     req.user = {
       _id: user._id,
       username: user.username,
-      avatar: user.avatar || user.avatarUrl || null
+      avatar: user.avatar || user.avatarUrl || null,
+      role: user.role || 'user'
     };
 
     return next();

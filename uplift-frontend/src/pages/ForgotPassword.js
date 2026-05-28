@@ -1,0 +1,189 @@
+// ForgotPassword.js
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "../styles/auth.css";
+
+const API = process.env.REACT_APP_API;
+
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [step, setStep] = useState(1); // 1 = Enter Email, 2 = Enter OTP & New Password
+  const [info, setInfo] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleRequestOTP = async (e) => {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    if (!email.trim()) return setError("Please enter your email.");
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/users/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Failed to request OTP");
+        setLoading(false);
+        return;
+      }
+
+      setInfo(data.message || "An OTP has been sent to your email. (Please check console logs too!)");
+      setStep(2);
+    } catch (err) {
+      console.error(err);
+      setError("Server error. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+    setInfo("");
+    if (!otpCode.trim()) return setError("Please enter the OTP code.");
+    if (newPassword.length < 6) return setError("New password must be at least 6 characters.");
+
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/users/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          email: email.trim(), 
+          otpCode: otpCode.trim(), 
+          newPassword 
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Failed to reset password");
+        setLoading(false);
+        return;
+      }
+
+      setInfo("Password reset successfully! Redirecting to sign in...");
+      setTimeout(() => {
+        navigate("/signin");
+      }, 2000);
+    } catch (err) {
+      console.error(err);
+      setError("Server error. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-left">
+          <div className="brand">
+            <div className="logo-mark">UP</div>
+            <div>
+              <h1>Recover Account</h1>
+              <p>Reset your password securely using an OTP code sent to your email.</p>
+            </div>
+          </div>
+          <div className="note">
+            Remember: Your privacy is key. We only use your email to verify password reset requests.
+          </div>
+        </div>
+
+        <div className="auth-form">
+          <h3 style={{ marginTop: 0 }}>Reset Password</h3>
+          
+          {step === 1 ? (
+            <form onSubmit={handleRequestOTP}>
+              <div className="field">
+                <label>Registered Email Address</label>
+                <input
+                  className="input"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your registered email"
+                  required
+                />
+              </div>
+
+              {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
+              {info && <div style={{ color: "#047857", background: "#ecfdf5", padding: 10, borderRadius: 8, border: "1px solid #a7f3d0", fontWeight: 600, fontSize: 13, marginBottom: 12 }}>{info}</div>}
+
+              <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+                <button className="btn primary" type="submit" disabled={loading} style={{ flex: 1 }}>
+                  {loading ? "Sending OTP…" : "Send OTP"}
+                </button>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => navigate("/signin")}
+                  style={{ flex: 1 }}
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={handleResetPassword}>
+              <div style={{ marginBottom: 12, fontSize: 13, color: "#475569" }}>
+                An OTP was sent to <strong>{email}</strong>.
+              </div>
+
+              <div className="field">
+                <label>Enter 6-Digit OTP</label>
+                <input
+                  className="input"
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  placeholder="Enter the 6-digit code"
+                  maxLength={6}
+                  required
+                />
+              </div>
+
+              <div className="field">
+                <label>Choose New Password</label>
+                <input
+                  className="input"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password"
+                  required
+                />
+              </div>
+
+              {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
+              {info && <div style={{ color: "#047857", background: "#ecfdf5", padding: 10, borderRadius: 8, border: "1px solid #a7f3d0", fontWeight: 600, fontSize: 13, marginBottom: 12 }}>{info}</div>}
+
+              <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+                <button className="btn primary" type="submit" disabled={loading} style={{ flex: 1 }}>
+                  {loading ? "Resetting…" : "Reset Password"}
+                </button>
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={() => setStep(1)}
+                  style={{ flex: 1 }}
+                >
+                  Change Email
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
