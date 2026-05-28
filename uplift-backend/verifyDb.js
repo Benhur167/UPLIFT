@@ -26,8 +26,8 @@ async function run() {
       console.log(`✅ Existing admin found: "${admin.username}"`);
     } else {
       console.log('No admin user found. Seeding an admin user...');
-      const adminUsername = 'BenhurBenny';
-      const adminPassword = '167apjjsm';
+      const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+      const adminPassword = process.env.ADMIN_PASSWORD || 'adminpassword123'; 
       const salt = await bcrypt.genSalt(10);
       const hash = await bcrypt.hash(adminPassword, salt);
 
