@@ -28,7 +28,8 @@ export default function SignIn() {
       }
     };
 
-    if (!document.getElementById("google-gis-script")) {
+    const existingScript = document.getElementById("google-gis-script");
+    if (!existingScript) {
       const script = document.createElement("script");
       script.id = "google-gis-script";
       script.src = "https://accounts.google.com/gsi/client";
@@ -36,8 +37,19 @@ export default function SignIn() {
       script.onload = initGoogle;
       document.body.appendChild(script);
     } else {
-      initGoogle();
+      if (window.google) {
+        initGoogle();
+      } else {
+        existingScript.addEventListener("load", initGoogle);
+      }
     }
+
+    return () => {
+      const script = document.getElementById("google-gis-script");
+      if (script) {
+        script.removeEventListener("load", initGoogle);
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

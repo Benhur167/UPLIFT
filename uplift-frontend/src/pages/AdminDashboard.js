@@ -318,16 +318,14 @@ export default function AdminDashboard() {
     String(s.userName || "anonymous").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const rc = sessionDetails?.requestedCall || null;
-
-  return (
-    <div className="flex bg-slate-50 font-sans" style={{ height: "calc(100vh - 69px)" }}>
+  const rc = sessionDetails?.requestedCall || null;  return (
+    <div className="flex bg-slate-50 dark:bg-slate-950 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-200" style={{ height: "calc(100vh - 69px)" }}>
       {/* Sidebar - Sessions list */}
-      <div className={`w-80 border-r border-slate-200 flex flex-col bg-white h-full ${id ? "hidden md:flex" : "flex w-full md:w-80"}`}>
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between flex-shrink-0">
+      <div className={`w-80 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900 h-full ${id ? "hidden md:flex" : "flex w-full md:w-80"}`}>
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between flex-shrink-0">
           <div>
-            <h2 className="text-sm font-bold text-slate-800 tracking-tight">Support Sessions</h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">{sessions.length} active sessions</p>
+            <h2 className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight">Support Sessions</h2>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">{sessions.length} active sessions</p>
           </div>
           <span className="flex h-2 w-2 relative">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -343,10 +341,10 @@ export default function AdminDashboard() {
               placeholder="Search user..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-50 pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 placeholder-slate-400 transition"
+              className="w-full bg-slate-50 dark:bg-slate-950/60 pl-8 pr-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-800 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition"
             />
             <svg
-              className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400"
+              className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -359,9 +357,9 @@ export default function AdminDashboard() {
         {/* Sessions list */}
         <div className="flex-1 overflow-y-auto px-2 pb-4 space-y-1">
           {loading && sessions.length === 0 ? (
-            <div className="text-center text-xs text-slate-400 py-8">Loading sessions...</div>
+            <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-8">Loading sessions...</div>
           ) : filteredSessions.length === 0 ? (
-            <div className="text-center text-xs text-slate-400 py-8 px-4">
+            <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-8 px-4">
               {searchTerm ? "No matching sessions" : "No active sessions yet"}
             </div>
           ) : (
@@ -376,10 +374,9 @@ export default function AdminDashboard() {
                   onClick={() => selectSession(s)}
                   className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-all duration-150 group ${
                     isSelected
-                      ? "bg-indigo-55 text-indigo-900 border-l-4 border-indigo-600 shadow-sm"
-                      : "hover:bg-slate-50 text-slate-700"
+                      ? "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 border-l-4 border-indigo-600 shadow-sm"
+                      : "hover:bg-slate-50 dark:hover:bg-slate-850/55 text-slate-700 dark:text-slate-300"
                   }`}
-                  style={isSelected ? { backgroundColor: "#f0f4ff" } : {}}
                 >
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div
@@ -389,22 +386,22 @@ export default function AdminDashboard() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between">
-                        <h4 className={`text-xs font-semibold truncate ${isSelected ? "text-indigo-900" : "text-slate-800"}`}>
+                        <h4 className={`text-xs font-semibold truncate ${isSelected ? "text-indigo-900 dark:text-indigo-300" : "text-slate-800 dark:text-slate-200"}`}>
                           {s.userName || "anonymous"}
                         </h4>
-                        <span className="text-[9px] text-slate-400 flex-shrink-0 pl-1">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-500 flex-shrink-0 pl-1">
                           {new Date(s.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
                       <div className="flex items-center justify-between mt-0.5">
-                        <p className="text-[10px] text-slate-400 truncate pr-1">
+                        <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate pr-1">
                           ID: {s.sessionId.slice(-6)}
                         </p>
                         {s.requestedCall && (
                           <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold flex items-center gap-0.5 flex-shrink-0 ${
                             s.requestedCall.status === "pending"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-emerald-100 text-emerald-800"
+                              ? "bg-amber-100 dark:bg-amber-950/45 text-amber-800 dark:text-amber-400"
+                              : "bg-emerald-100 dark:bg-emerald-950/45 text-emerald-800 dark:text-emerald-400"
                           }`}>
                             📞 Call
                           </span>
@@ -414,7 +411,7 @@ export default function AdminDashboard() {
                   </div>
 
                   {unread && (
-                    <span className="ml-2 w-2 h-2 bg-rose-500 rounded-full border border-white flex-shrink-0 shadow-sm animate-pulse"></span>
+                    <span className="ml-2 w-2 h-2 bg-rose-500 rounded-full border border-white dark:border-slate-800 flex-shrink-0 shadow-sm animate-pulse"></span>
                   )}
                 </div>
               );
@@ -424,15 +421,15 @@ export default function AdminDashboard() {
       </div>
 
       {/* Main Chat Panel */}
-      <div className={`flex-1 flex flex-col h-full bg-slate-50 ${!id ? "hidden md:flex" : "flex"}`}>
+      <div className={`flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950 ${!id ? "hidden md:flex" : "flex"}`}>
         {id ? (
           <>
             {/* Chat Header */}
-            <header className="h-14 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
+            <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 md:px-6 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => navigate('/admin/support')}
-                  className="md:hidden p-1 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                  className="md:hidden p-1 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
@@ -444,40 +441,40 @@ export default function AdminDashboard() {
                   {String(sessionDetails?.userName || "U").slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-800 leading-tight">
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight">
                     {sessionDetails?.userName || "User"}
                   </h3>
                   <div className="flex items-center gap-1 mt-0.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[9px] text-slate-400 font-medium">Session Active</span>
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">Session Active</span>
                   </div>
                 </div>
               </div>
 
-              <div className="text-[10px] text-slate-400">
-                Session ID: <span className="font-mono text-[10px] bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">{id}</span>
+              <div className="text-[10px] text-slate-400 dark:text-slate-400">
+                Session ID: <span className="font-mono text-[10px] bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-600 dark:text-slate-400">{id}</span>
               </div>
             </header>
 
             {/* Call Request Banner */}
             {rc && (
-              <div className="bg-amber-50/60 border-b border-amber-100 px-4 md:px-6 py-3 flex-shrink-0 animate-fade-in">
+              <div className="bg-amber-50/60 dark:bg-amber-950/20 border-b border-amber-100 dark:border-amber-900/40 px-4 md:px-6 py-3 flex-shrink-0 animate-fade-in">
                 <div className="max-w-4xl mx-auto flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                   <div className="flex items-start gap-2.5">
-                    <div className="p-1.5 bg-amber-100 rounded-lg text-amber-700 mt-0.5">
+                    <div className="p-1.5 bg-amber-100 dark:bg-amber-950/45 text-amber-700 dark:text-amber-400 rounded-lg mt-0.5">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
                     </div>
                     <div>
-                      <div className="text-xs font-bold text-slate-800">Pending Call Request</div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-slate-600 text-[11px]">
-                        <div>Phone: <a href={`tel:${rc.phone}`} className="text-indigo-600 font-semibold hover:underline">{rc.phone}</a></div>
-                        <div>Preferred Time: <span className="font-medium text-slate-700">{rc.preferredAt ? new Date(rc.preferredAt).toLocaleString() : "As soon as possible"}</span></div>
+                      <div className="text-xs font-bold text-slate-800 dark:text-slate-200">Pending Call Request</div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-slate-600 dark:text-slate-400 text-[11px]">
+                        <div>Phone: <a href={`tel:${rc.phone}`} className="text-indigo-600 dark:text-indigo-400 font-semibold hover:underline">{rc.phone}</a></div>
+                        <div>Preferred Time: <span className="font-medium text-slate-700 dark:text-slate-300">{rc.preferredAt ? new Date(rc.preferredAt).toLocaleString() : "As soon as possible"}</span></div>
                       </div>
                       <div className="mt-1 text-[11px]">
-                        Status: <span className="font-bold text-amber-700 bg-amber-100/50 px-1.5 py-0.5 rounded text-[9px]">{rc.status}</span>
-                        {rc.adminAssigned && <span className="text-slate-500 ml-2">Assigned to: <strong className="text-slate-700">{rc.adminAssigned}</strong></span>}
+                        Status: <span className="font-bold text-amber-700 dark:text-amber-400 bg-amber-100/50 dark:bg-amber-950/40 px-1.5 py-0.5 rounded text-[9px]">{rc.status}</span>
+                        {rc.adminAssigned && <span className="text-slate-500 dark:text-slate-400 ml-2">Assigned to: <strong className="text-slate-700 dark:text-slate-300">{rc.adminAssigned}</strong></span>}
                       </div>
                     </div>
                   </div>
@@ -495,7 +492,7 @@ export default function AdminDashboard() {
                         setModalNotes("");
                         setActionModal({ action: 'schedule', sessionId: id });
                       }}
-                      className="px-2.5 py-1.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-[10px] font-bold rounded-md shadow-sm transition"
+                      className="px-2.5 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 text-[10px] font-bold rounded-md shadow-sm transition"
                     >
                       Schedule
                     </button>
@@ -515,7 +512,7 @@ export default function AdminDashboard() {
                         setModalNotes("");
                         setActionModal({ action: 'cancel', sessionId: id });
                       }}
-                      className="px-2.5 py-1.5 bg-rose-50 border border-rose-100 text-rose-700 hover:bg-rose-100/40 text-[10px] font-bold rounded-md transition"
+                      className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 hover:bg-rose-100/40 dark:hover:bg-rose-950/45 text-[10px] font-bold rounded-md transition"
                     >
                       Cancel
                     </button>
@@ -525,10 +522,10 @@ export default function AdminDashboard() {
             )}
 
             {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-slate-50/50">
+            <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/30">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                  <svg className="w-12 h-12 text-slate-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                   <p className="text-xs">No messages yet. Send a greeting to start the conversation.</p>
@@ -552,20 +549,20 @@ export default function AdminDashboard() {
                       </div>
 
                       <div className={`max-w-[70%] ${isAdminMsg ? "text-right" : ""}`}>
-                        <span className="text-[9px] text-slate-400 font-medium px-1 block mb-0.5">
+                        <span className="text-[9px] text-slate-400 dark:text-slate-400 font-medium px-1 block mb-0.5">
                           {m.senderName}
                         </span>
                         <div
                           className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm inline-block text-left ${
                             isAdminMsg
                               ? "bg-indigo-600 text-white rounded-tr-none"
-                              : "bg-white border border-slate-100 text-slate-800 rounded-tl-none"
+                              : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none"
                           }`}
                           style={isAdminMsg ? { backgroundColor: "#4f46e5" } : {}}
                         >
                           {m.text}
                         </div>
-                        <span className="text-[8px] text-slate-400 block mt-0.5 px-1">
+                        <span className="text-[8px] text-slate-400 dark:text-slate-400 block mt-0.5 px-1">
                           {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -577,9 +574,9 @@ export default function AdminDashboard() {
             </div>
 
             {/* Chat Input */}
-            <div className="p-3 border-t border-slate-200 bg-white">
+            <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
               {typingUsers.size > 0 && (
-                <div className="flex items-center gap-1 text-[10px] text-slate-400 italic mb-1.5 px-1">
+                <div className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 italic mb-1.5 px-1">
                   <span className="flex gap-0.5">
                     <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce"></span>
                     <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
@@ -595,7 +592,7 @@ export default function AdminDashboard() {
                   value={text}
                   onChange={(e) => handleTyping(e.target.value)}
                   placeholder="Type a message..."
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400 transition"
+                  className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 transition"
                 />
                 <button
                   type="submit"
@@ -610,13 +607,13 @@ export default function AdminDashboard() {
             </div>
           </>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 text-slate-400 p-8">
-            <div className="p-3 bg-indigo-50 rounded-full text-indigo-400 mb-3 shadow-inner">
+          <div className="flex-1 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-400 p-8">
+            <div className="p-3 bg-indigo-50 dark:bg-indigo-950/40 rounded-full text-indigo-400 dark:text-indigo-400 mb-3 shadow-inner">
               <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </div>
-            <h3 className="text-xs font-bold text-slate-700">No Session Selected</h3>
+            <h3 className="text-xs font-bold text-slate-700 dark:text-slate-300">No Session Selected</h3>
             <p className="text-[11px] text-slate-500 max-w-[240px] text-center mt-1 leading-normal">
               Select an active support session from the list on the left to start chatting with the user in real-time.
             </p>
@@ -626,11 +623,11 @@ export default function AdminDashboard() {
 
       {/* Modern Dialog Modals */}
       {actionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm transition-all duration-300 animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100 transition-all transform scale-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm transition-all duration-300 animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden border border-slate-100 dark:border-slate-800 transition-all transform scale-100">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950">
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
                 {actionModal.action === 'schedule' && (
                   <>
                     <span className="p-1.5 bg-indigo-100 text-indigo-700 rounded-lg">📅</span>
@@ -652,7 +649,7 @@ export default function AdminDashboard() {
               </h3>
               <button
                 onClick={() => setActionModal(null)}
-                className="text-slate-400 hover:text-slate-600 transition"
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-500 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -676,7 +673,7 @@ export default function AdminDashboard() {
             }} className="p-6 space-y-4">
               {actionModal.action === 'schedule' && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
                     Select Date and Time <span className="text-rose-500">*</span>
                   </label>
                   <input
@@ -684,14 +681,14 @@ export default function AdminDashboard() {
                     required
                     value={modalDate}
                     onChange={(e) => setModalDate(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 placeholder-slate-400 transition"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 transition"
                   />
                 </div>
               )}
 
               {(actionModal.action === 'complete' || actionModal.action === 'cancel') && (
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-2">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-2">
                     {actionModal.action === 'complete' ? 'Completion Notes (optional)' : 'Reason for Cancellation (optional)'}
                   </label>
                   <textarea
@@ -699,15 +696,15 @@ export default function AdminDashboard() {
                     value={modalNotes}
                     onChange={(e) => setModalNotes(e.target.value)}
                     placeholder={actionModal.action === 'complete' ? "Describe outcome of the call..." : "Provide context for cancelling this request..."}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 placeholder-slate-400 transition resize-none"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 transition resize-none"
                   />
                 </div>
               )}
 
               {actionModal.action === 'cancel' && (
-                <div className="bg-rose-50 border border-rose-100 rounded-xl p-3 flex gap-2">
+                <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/40 rounded-xl p-3 flex gap-2">
                   <span className="text-rose-600 text-sm mt-0.5">⚠️</span>
-                  <p className="text-[11px] text-rose-700 leading-normal text-left">
+                  <p className="text-[11px] text-rose-700 dark:text-rose-400 leading-normal text-left">
                     <strong>Are you sure?</strong> Cancelling this request will mark it as cancelled, and the user will see that it has been canceled.
                   </p>
                 </div>
@@ -718,7 +715,7 @@ export default function AdminDashboard() {
                 <button
                   type="button"
                   onClick={() => setActionModal(null)}
-                  className="px-4 py-2 border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold rounded-xl transition"
+                  className="px-4 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold rounded-xl transition"
                 >
                   Go Back
                 </button>
@@ -740,3 +737,4 @@ export default function AdminDashboard() {
     </div>
   );
 }
+

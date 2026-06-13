@@ -99,23 +99,7 @@ router.post('/google-login', async (req, res) => {
     let isNewUser = false;
 
     if (!user) {
-      // Create a temporary unique decoy username
-      let baseUsername = name ? name.toLowerCase().replace(/[^a-z0-9]/g, '') : 'googleuser';
-      let uniqueUsername = baseUsername;
-      let counter = 1;
-      while (await User.findOne({ username: uniqueUsername })) {
-        uniqueUsername = `${baseUsername}${counter}`;
-        counter++;
-      }
-
-      user = await User.create({
-        username: uniqueUsername,
-        email,
-        passwordHash: 'GOOGLE_OAUTH_USER', // placeholder password
-        avatar: picture || '/default-avatar.png',
-        role: uniqueUsername === 'admin' ? 'admin' : 'user'
-      });
-      isNewUser = true;
+      return res.status(404).json({ message: "No account found with this Google email. Please register first on the Sign Up page." });
     }
 
     res.json({
