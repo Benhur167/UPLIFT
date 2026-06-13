@@ -142,4 +142,17 @@ router.post('/session/:id/book', authCheck, async (req, res) => {
   }
 });
 
+// GET /api/support/user-sessions (protected)
+// Returns all support sessions for the logged-in user
+router.get('/user-sessions', authCheck, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const list = await SupportSession.find({ userId }).sort({ createdAt: -1 });
+    return res.json(list);
+  } catch (e) {
+    console.error('GET /support/user-sessions error', e);
+    return res.status(500).json({ message: 'failed to fetch user support sessions' });
+  }
+});
+
 module.exports = router;

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import NavBar from "./components/Navbar";
+import Profile from "./pages/Profile";
 import Home from "./pages/Home";
 import PostSuccess from "./pages/PostSuccess";
 import SuccessFeed from "./pages/SuccessFeed";
@@ -26,6 +27,17 @@ function RequireAdmin({ children }) {
 
 
 function App() {
+  useEffect(() => {
+    // Check persisted theme or system preference
+    const persisted = localStorage.getItem("theme");
+    const isDark = persisted === "dark" || (!persisted && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   return (
     <Router>
       <NavBar />
@@ -39,6 +51,7 @@ function App() {
         <Route path="/signup" element={<CreateAccount />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/profile" element={<Profile />} />
         <Route path="/support" element={<SupportHome />} />
         <Route path="/support/session/:id" element={<SupportSession />} />
         <Route path="/admin/support" element={<RequireAdmin><AdminSupport/></RequireAdmin>} />

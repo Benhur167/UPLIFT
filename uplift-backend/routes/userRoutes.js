@@ -4,33 +4,30 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const User = require('../models/User');
+const authCheck = require('../middleware/authCheck');
 
-// Helper to send email (with log fallback for local testing)
+// Helper to send email (strict SMTP)
 async function sendOTPEmail(email, otpCode) {
-  console.log(`\n=========================================\n[OTP SENT TO ${email}]: ${otpCode}\n=========================================\n`);
-  
-  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
-    try {
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS
-        }
-      });
-
-      await transporter.sendMail({
-        from: '"Uplift Support" <no-reply@uplift-emotional-support.org>',
-        to: email,
-        subject: "Uplift Password Reset OTP Code",
-        text: `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`,
-        html: `<p>Your OTP code for password reset is: <b>${otpCode}</b></p><p>It will expire in 10 minutes.</p>`
-      });
-      console.log('OTP Email sent successfully via SMTP');
-    } catch (err) {
-      console.error('Failed to send OTP via SMTP, logged to console instead:', err);
-    }
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    throw new Error('SMTP credentials are missing on the server. Cannot send OTP.');
   }
+
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS
+    }
+  });
+
+  await transporter.sendMail({
+    from: '"Uplift Support" <no-reply@uplift-emotional-support.org>',
+    to: email,
+    subject: "Uplift Password Reset OTP Code",
+    text: `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`,
+    html: `<p>Your OTP code for password reset is: <b>${otpCode}</b></p><p>It will expire in 10 minutes.</p>`
+  });
+  console.log('OTP Email sent successfully via SMTP');
 }
 
 // POST /api/users/signup
@@ -190,6 +187,57 @@ router.post('/reset-password', async (req, res) => {
   } catch (e) {
     console.error('reset-password error', e);
     res.status(500).json({ message: 'Failed to reset password' });
+  }
+});
+
+// GET /api/users/profile (protected)
+router.get('/profile', authCheck, async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.user.username });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      avatar: user.avatar,
+      role: user.role || 'user',
+      email: user.email,
+      bio: user.bio || ""
+    });
+  } catch (e) {
+    console.error('GET /api/users/profile error', e);
+    res.status(500).json({ message: 'Failed to fetch profile' });
+  }
+});
+
+// PUT /api/users/profile (protected)
+router.put('/profile', authCheck, async (req, res) => {
+  try {
+    const { avatar, bio } = req.body;
+    
+    // Find and update
+    const user = await User.findOneAndUpdate(
+      { username: req.user.username },
+      { 
+        ...(avatar !== undefined && { avatar }),
+        ...(bio !== undefined && { bio })
+      },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      avatar: user.avatar,
+      role: user.role || 'user',
+      email: user.email,
+      bio: user.bio || ""
+    });
+  } catch (e) {
+    console.error('PUT /api/users/profile error', e);
+    res.status(500).json({ message: 'Failed to update profile' });
   }
 });
 

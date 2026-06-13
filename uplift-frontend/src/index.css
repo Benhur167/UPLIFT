@@ -2,4 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Your custom CSS can go below if needed */
+@layer base {
+  body {
+    @apply bg-slate-50/50 text-slate-800 transition-colors duration-200;
+  }
+  
+  html.dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+}

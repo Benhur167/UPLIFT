@@ -157,4 +157,36 @@ router.get('/similar-success', async (req, res) => {
   }
 });
 
+// GET /api/stories/user/:username
+router.get('/user/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const list = await Story.find({ username }).sort({ createdAt: -1 });
+    res.json(list);
+  } catch (e) {
+    console.error('GET /api/stories/user/:username error', e);
+    res.status(500).json({ message: 'failed to fetch user stories' });
+  }
+});
+
+// DELETE /api/stories/:id (protected)
+router.delete('/:id', authCheck, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const story = await Story.findById(id);
+    if (!story) return res.status(404).json({ message: 'Story not found' });
+
+    // Enforce that only the author can delete their story
+    if (story.username !== req.user.username) {
+      return res.status(403).json({ message: 'Not authorized to delete this story' });
+    }
+
+    await Story.findByIdAndDelete(id);
+    res.json({ success: true, message: 'Story deleted successfully' });
+  } catch (e) {
+    console.error('DELETE /api/stories/:id error', e);
+    res.status(500).json({ message: 'failed to delete story' });
+  }
+});
+
 module.exports = router;

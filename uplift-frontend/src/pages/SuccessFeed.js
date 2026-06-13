@@ -59,17 +59,17 @@ export default function SuccessFeed() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 font-sans">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-200">
       {/* Back Button */}
       <div className="mb-6">
-        <Link to="/" className="inline-flex items-center text-xs font-bold text-indigo-600 hover:text-indigo-800 transition">
+        <Link to="/" className="inline-flex items-center text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition">
           &larr; Back to Home
         </Link>
       </div>
 
       <header className="mb-8 text-center sm:text-left">
-        <h1 className="text-3xl font-black text-slate-900 leading-tight">Success Stories</h1>
-        <p className="text-slate-500 mt-2 text-sm sm:text-base max-w-xl">Real stories of overcoming emotional and personal struggles. Browse and find inspiration.</p>
+        <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 leading-tight">Success Stories</h1>
+        <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm sm:text-base max-w-xl">Real stories of overcoming emotional and personal struggles. Browse and find inspiration.</p>
       </header>
 
       {/* Search Input */}
@@ -79,10 +79,10 @@ export default function SuccessFeed() {
           placeholder="Search success stories by topic, keyword, or tags..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm text-slate-800 transition"
+          className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-750 text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm transition"
         />
         <svg
-          className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400"
+          className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400 dark:text-slate-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -92,9 +92,9 @@ export default function SuccessFeed() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-400 text-xs font-semibold">Loading stories...</div>
+        <div className="text-center py-12 text-slate-400 dark:text-slate-500 text-xs font-semibold">Loading stories...</div>
       ) : filteredStories.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-slate-400 text-xs font-medium">
+        <div className="text-center py-12 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm p-8 text-slate-400 dark:text-slate-500 text-xs font-medium">
           {searchTerm ? "No matching success stories found." : "No success stories yet. Be the first to share your journey!"}
         </div>
       ) : (
@@ -103,12 +103,12 @@ export default function SuccessFeed() {
             const initials = String(s.username || "U").slice(0, 2).toUpperCase();
             return (
               <article 
-                className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 hover:shadow-md transition flex flex-col justify-between" 
+                className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl shadow-sm p-5 hover:shadow-md transition flex flex-col justify-between" 
                 key={s._id}
               >
                 <div>
-                  <h3 className="text-sm font-bold text-slate-800 leading-snug mb-3">{s.title || "Untitled"}</h3>
-                  <p className="text-slate-600 text-xs leading-relaxed mb-2 whitespace-pre-line">
+                  <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 leading-snug mb-3">{s.title || "Untitled"}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed mb-2 whitespace-pre-line">
                     {s.content && s.content.length > 200 && !expandedStories.has(s._id)
                       ? `${s.content.slice(0, 200)}...`
                       : s.content}
@@ -116,25 +116,25 @@ export default function SuccessFeed() {
                   {s.content && s.content.length > 200 && (
                     <button
                       onClick={() => toggleExpand(s._id)}
-                      className="text-xs font-bold text-indigo-600 hover:text-indigo-800 mb-3 transition focus:outline-none"
+                      className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 mb-3 transition focus:outline-none"
                     >
                       {expandedStories.has(s._id) ? "Show less" : "Read more"}
                     </button>
                   )}
                 </div>
                 
-                <div className="flex flex-col gap-3 pt-3 border-t border-slate-50 mt-auto">
+                <div className="flex flex-col gap-3 pt-3 border-t border-slate-50 dark:border-slate-800 mt-auto">
                   <div className="flex items-center gap-2">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${getAvatarColor(s.username || "anonymous")}`}>
                       {initials}
                     </div>
-                    <span className="text-[10px] text-slate-500 font-semibold">by {s.username || "anonymous"}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold">by {s.username || "anonymous"}</span>
                   </div>
 
                   {Array.isArray(s.tags) && s.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {s.tags.map((t, i) => (
-                        <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[9px] font-semibold" key={i}>
+                        <span className="px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-450 text-[9px] font-semibold" key={i}>
                           {t}
                         </span>
                       ))}

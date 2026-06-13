@@ -139,16 +139,16 @@ export default function Communities() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 font-sans">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 font-sans text-slate-800 dark:text-slate-100 transition-colors duration-200">
       {/* Header */}
       <header className="mb-8 text-center md:text-left flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 leading-tight">Uplift Communities</h1>
-          <p className="text-slate-500 mt-2 text-sm sm:text-base max-w-lg">Find your safe space to connect, belong, share stories, and grow together.</p>
+          <h1 className="text-3xl font-black text-slate-900 dark:text-slate-100 leading-tight">Uplift Communities</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm sm:text-base max-w-lg">Find your safe space to connect, belong, share stories, and grow together.</p>
         </div>
         <Link 
           to="/community-create" 
-          className="self-center md:self-start px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
+          className="self-center md:self-start px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 animate-pulse-once"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
@@ -158,7 +158,7 @@ export default function Communities() {
       </header>
 
       {error && (
-        <div className="mb-6 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-2">
+        <div className="mb-6 p-3 rounded-xl bg-rose-50 dark:bg-rose-955/30 border border-rose-100 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 text-xs font-semibold flex items-center gap-2">
           <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
@@ -173,10 +173,10 @@ export default function Communities() {
           placeholder="Search communities..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-sm text-slate-800 transition"
+          className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-750 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm transition"
         />
         <svg
-          className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400"
+          className="absolute left-3 top-2.5 h-3.5 w-3.5 text-slate-400 dark:text-slate-500"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -188,10 +188,10 @@ export default function Communities() {
       {/* Grid List */}
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         {communities.length === 0 && !error && (
-          <div className="col-span-full text-center py-12 text-slate-400 text-xs font-semibold">No communities active yet.</div>
+          <div className="col-span-full text-center py-12 text-slate-400 dark:text-slate-550 text-xs font-semibold">No communities active yet.</div>
         )}
         {communities.length > 0 && filteredCommunities.length === 0 && (
-          <div className="col-span-full text-center py-12 text-slate-400 text-xs font-semibold">No matching communities found.</div>
+          <div className="col-span-full text-center py-12 text-slate-400 dark:text-slate-550 text-xs font-semibold">No matching communities found.</div>
         )}
 
         {filteredCommunities.map((c) => {
@@ -202,14 +202,14 @@ export default function Communities() {
           return (
             <div
               key={c._id}
-              className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
+              className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl p-5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 flex flex-col justify-between"
             >
               <div className="flex items-start gap-4">
                 {c.avatar || c.dp ? (
                   <img
                     src={c.avatar || c.dp}
                     alt={c.name}
-                    className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-sm flex-shrink-0"
+                    className="w-12 h-12 rounded-xl object-cover border border-slate-100 dark:border-slate-800 shadow-sm flex-shrink-0"
                   />
                 ) : (
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-xs text-white shadow-sm flex-shrink-0 ${getAvatarColor(c.name || "Community")}`}>
@@ -217,20 +217,20 @@ export default function Communities() {
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-xs font-bold text-slate-800 truncate leading-snug">{c.name}</h3>
-                  <p className="text-[11px] text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-snug">{c.name}</h3>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                     {c.description || "No description provided."}
                   </p>
-                  <span className="inline-flex items-center text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full mt-3">
+                  <span className="inline-flex items-center text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-2 py-0.5 rounded-full mt-3">
                     {memberList.length} members
                   </span>
                 </div>
               </div>
 
-              <div className="flex gap-2 mt-6 pt-3 border-t border-slate-50">
+              <div className="flex gap-2 mt-6 pt-3 border-t border-slate-50 dark:border-slate-800">
                 <button
                   onClick={() => showMembers(c)}
-                  className="px-3 py-2 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold transition flex-1 flex items-center justify-center gap-1.5"
+                  className="px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-605 dark:text-slate-350 border border-slate-200 dark:border-slate-700 text-[10px] font-bold transition flex-1 flex items-center justify-center gap-1.5"
                 >
                   {!joined && <span className="text-[11px] leading-none">🔒</span>}
                   <span>View Members</span>
@@ -260,13 +260,13 @@ export default function Communities() {
 
       {/* Members Modal Overlay */}
       {membersModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm z-50 animate-fade-in">
-          <div className="w-80 max-w-full bg-white rounded-2xl shadow-xl border border-slate-100 p-5 flex flex-col max-h-[380px]">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Members: {membersModal.name}</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm z-50 animate-fade-in">
+          <div className="w-80 max-w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-xl p-5 flex flex-col max-h-[380px] animate-scaleUp">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Members: {membersModal.name}</h3>
               <button 
                 onClick={() => setMembersModal(null)}
-                className="text-slate-400 hover:text-slate-600 transition"
+                className="text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 transition"
               >
                 ✕
               </button>
@@ -274,25 +274,25 @@ export default function Communities() {
             
             <div className="flex-1 overflow-y-auto py-3 space-y-1">
               {membersModal.members.length === 0 ? (
-                <div className="text-center text-xs text-slate-400 py-6">No members yet</div>
+                <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-6">No members yet</div>
               ) : (
                 membersModal.members.map((m, i) => {
                   const initial = String(m || "U").slice(0, 1).toUpperCase();
                   return (
-                    <div key={i} className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-slate-50 transition">
+                    <div key={i} className="flex items-center gap-2.5 py-1.5 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition">
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold text-white ${getAvatarColor(m || "anonymous")}`}>
                         {initial}
                       </div>
-                      <span className="text-xs text-slate-700 font-semibold">{m}</span>
+                      <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">{m}</span>
                     </div>
                   );
                 })
               )}
             </div>
 
-            <div className="pt-3 border-t border-slate-100 text-right">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-right">
               <button 
-                className="px-3.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-600 border border-slate-200 text-[10px] font-bold rounded-lg transition"
+                className="px-3.5 py-1.5 bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-750 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-[10px] font-bold rounded-lg transition"
                 onClick={() => setMembersModal(null)}
               >
                 Close

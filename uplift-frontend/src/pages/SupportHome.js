@@ -53,25 +53,25 @@ export default function SupportHome() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50/40 flex flex-col font-sans py-12 px-4 sm:px-6">
+    <div className="min-h-screen bg-slate-50/40 dark:bg-slate-950 flex flex-col font-sans py-12 px-4 sm:px-6 text-slate-800 dark:text-slate-100 transition-colors duration-200">
       <div className="max-w-2xl mx-auto w-full">
         {/* Header */}
         <header className="text-center mb-8">
-          <div className="mx-auto p-3 bg-indigo-50 text-indigo-600 rounded-2xl w-fit mb-4 shadow-sm">
+          <div className="mx-auto p-3 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-2xl w-fit mb-4 shadow-sm">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight">Need Support?</h1>
-          <p className="text-slate-500 mt-2 text-sm max-w-md mx-auto leading-relaxed">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Need Support?</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-2 text-sm max-w-md mx-auto leading-relaxed">
             Start a secure, private support session with our moderator team. We're here to listen and help.
           </p>
         </header>
 
         {/* Card */}
-        <section className="bg-white border border-slate-100 shadow-xl shadow-slate-100/50 rounded-2xl p-6 sm:p-8">
+        <section className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/50 dark:shadow-none rounded-2xl p-6 sm:p-8">
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-2">
+            <div className="mb-6 p-4 rounded-xl bg-rose-50 dark:bg-rose-955/30 border border-rose-100 dark:border-rose-900/40 text-rose-700 dark:text-rose-455 text-xs font-semibold flex items-center gap-2">
               <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
@@ -81,33 +81,33 @@ export default function SupportHome() {
 
           <div className="space-y-6">
             <div>
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-3">How it works</h3>
-              <ol className="relative border-l border-slate-100 space-y-5 ml-2.5">
+              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-3">How it works</h3>
+              <ol className="relative border-l border-slate-100 dark:border-slate-800 space-y-5 ml-2.5">
                 <li className="relative pl-6">
-                  <span className="absolute -left-3 top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold shadow-sm">1</span>
-                  <h4 className="text-xs font-bold text-slate-800">Initialize Private Session</h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5 leading-normal">
+                  <span className="absolute -left-3 top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/45 border border-indigo-100 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold shadow-sm">1</span>
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-250">Initialize Private Session</h4>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 leading-normal">
                     Click the button below to initialize a secure conversation space dedicated entirely to you.
                   </p>
                 </li>
                 <li className="relative pl-6">
-                  <span className="absolute -left-3 top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold shadow-sm">2</span>
-                  <h4 className="text-xs font-bold text-slate-800">Request Call or Book Therapist</h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5 leading-normal">
+                  <span className="absolute -left-3 top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/45 border border-indigo-100 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold shadow-sm">2</span>
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-250">Request Call or Book Therapist</h4>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 leading-normal">
                     Inside the session, you can request an immediate callback or schedule an appointment with a psychiatrist.
                   </p>
                 </li>
                 <li className="relative pl-6">
-                  <span className="absolute -left-3 top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-[10px] font-bold shadow-sm">3</span>
-                  <h4 className="text-xs font-bold text-slate-800">Live Support Connection</h4>
-                  <p className="text-[11px] text-slate-400 mt-0.5 leading-normal">
+                  <span className="absolute -left-3 top-0.5 flex items-center justify-center w-6 h-6 rounded-full bg-indigo-50 dark:bg-indigo-950/45 border border-indigo-100 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400 text-[10px] font-bold shadow-sm">3</span>
+                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-250">Live Support Connection</h4>
+                  <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5 leading-normal">
                     Our admin team is notified instantly in real time to chat with you and assist with your requests.
                   </p>
                 </li>
               </ol>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row gap-3">
               <button
                 onClick={startSupportSession}
                 disabled={loading}
@@ -126,7 +126,7 @@ export default function SupportHome() {
               </button>
               <button
                 onClick={() => navigate("/")}
-                className="py-3 px-5 border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-xl text-xs transition"
+                className="py-3 px-5 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-350 font-bold rounded-xl text-xs transition"
               >
                 Back to Home
               </button>

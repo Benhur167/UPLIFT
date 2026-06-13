@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema({
   avatar: { type: String, default: '/default-avatar.png' }, // file name or data URL
   email: { type: String, unique: true, sparse: true },      // email for OTP and Google login (sparse unique)
   role: { type: String, default: 'user', enum: ['user', 'admin'] }, // user or admin
+  bio: { type: String, default: "" },
   otp: {
     code: { type: String },
     expiresAt: { type: Date }

@@ -1,9 +1,10 @@
 // CreateAccount.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 
 const API = process.env.REACT_APP_API;
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || "739257618239-mockclientid.apps.googleusercontent.com";
 const PRESET = ["avatar2.jpg","avatar4.jpg","avatar5.jpg","avatar6.jpg","avatar8.jpg","avatar9.jpg"];
 
 export default function CreateAccount() {
@@ -14,6 +15,82 @@ export default function CreateAccount() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // Load Google Sign-In (GIS) script dynamically for signup
+  useEffect(() => {
+    const initGoogle = () => {
+      if (window.google) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleResponse
+        });
+        window.google.accounts.id.renderButton(
+          document.getElementById("google-signup-btn"),
+          { theme: "outline", size: "large", width: "100%", text: "signup_with" }
+        );
+      }
+    };
+
+    if (!document.getElementById("google-gis-script-signup")) {
+      const script = document.createElement("script");
+      script.id = "google-gis-script-signup";
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.onload = initGoogle;
+      document.body.appendChild(script);
+    } else {
+      initGoogle();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleGoogleResponse = async (googleRes) => {
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API}/users/google-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: googleRes.credential }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Google signup failed");
+        setLoading(false);
+        return;
+      }
+
+      // Save user details with both structures for full compatibility
+      const userData = {
+        username: data.username,
+        avatar: data.avatar,
+        role: data.role || "user",
+        email: data.email || null,
+        user: {
+          username: data.username,
+          avatar: data.avatar,
+          role: data.role || "user",
+          email: data.email || null
+        }
+      };
+
+      localStorage.setItem("uplift_user", JSON.stringify(userData));
+      localStorage.setItem("username", data.username);
+
+      console.log("✅ Google signup success:", data.username);
+
+      if (data.role === "admin") {
+        navigate("/admin/support");
+      } else {
+        navigate("/");
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Google server signup failed. Try again.");
+      setLoading(false);
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -128,9 +205,19 @@ export default function CreateAccount() {
 
             {error && <div className="error">{error}</div>}
 
-            <div style={{ display:"flex", gap:10, marginTop:12 }}>
-              <button className="btn primary" type="submit" disabled={loading}>{loading ? "Creating…" : "Create Account"}</button>
-              <button type="button" className="btn ghost" onClick={() => navigate("/signin")}>Already have account</button>
+            <div style={{ display:"flex", gap:10, marginTop:12, flexDirection: "column" }}>
+              <div style={{ display:"flex", gap:10 }}>
+                <button className="btn primary" type="submit" disabled={loading} style={{ flex: 1 }}>
+                  {loading ? "Creating…" : "Create Account"}
+                </button>
+                <button type="button" className="btn ghost" onClick={() => navigate("/signin")} style={{ flex: 1 }}>
+                  Already have account
+                </button>
+              </div>
+
+              <div style={{ margin: "8px 0", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>or</div>
+
+              <div id="google-signup-btn" style={{ minHeight: 40 }}></div>
             </div>
           </form>
         </div>
