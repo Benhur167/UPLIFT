@@ -11,8 +11,18 @@ const app = express();
 const server = http.createServer(app);
 
 // standard middleware
-const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
-app.use(cors({ origin: ALLOWED_ORIGIN, credentials: true }));
+const rawOrigin = process.env.ALLOWED_ORIGIN || "http://localhost:3000";
+const allowedOrigins = rawOrigin.split(',').map(o => o.trim());
+
+const checkOrigin = (origin, callback) => {
+  if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:")) {
+    callback(null, true);
+  } else {
+    callback(new Error('Not allowed by CORS'));
+  }
+};
+
+app.use(cors({ origin: checkOrigin, credentials: true }));
 app.use(express.json());
 app.use(morgan('dev'));
 
@@ -42,7 +52,7 @@ app.use('/api/users', userRoutes);
 
 // socket.io init
 const io = new Server(server, {
-  cors: { origin: ALLOWED_ORIGIN, methods: ["GET","POST"], credentials: true },
+  cors: { origin: checkOrigin, methods: ["GET","POST"], credentials: true },
   transports: ["websocket", "polling"],
   pingInterval: 25000,
   pingTimeout: 60000,
