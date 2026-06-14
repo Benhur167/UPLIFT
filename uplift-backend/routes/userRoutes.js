@@ -17,7 +17,9 @@ async function sendOTPEmail(email, otpCode) {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS
@@ -25,7 +27,7 @@ async function sendOTPEmail(email, otpCode) {
     });
 
     await transporter.sendMail({
-      from: '"Uplift Support" <no-reply@uplift-emotional-support.org>',
+      from: `"Uplift Support" <${process.env.SMTP_USER}>`,
       to: email,
       subject: "Uplift Password Reset OTP Code",
       text: `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`,
@@ -35,7 +37,6 @@ async function sendOTPEmail(email, otpCode) {
   } catch (err) {
     console.error('[OTP ERROR] Failed to send email via SMTP:', err.message);
     console.log(`[OTP FALLBACK] You can retrieve the OTP from server logs: ${otpCode}`);
-    // Do not throw so the user request does not return a 500 error
   }
 }
 
