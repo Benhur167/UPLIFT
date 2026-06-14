@@ -163,7 +163,7 @@ export default function CreateAccount() {
 
           <div style={{ marginTop: 18 }}>
             <div className="small">Sample guidelines</div>
-            <ul style={{ marginTop:8, color:"#475569" }}>
+            <ul className="mt-2 text-slate-600 dark:text-slate-400 list-disc pl-5">
               <li>Pick a memorable decoy name (3+ chars)</li>
               <li>Strong password helps protect your decoy account</li>
               <li>You can change avatar later in settings</li>
@@ -175,7 +175,7 @@ export default function CreateAccount() {
           <h3 style={{ marginTop:0 }}>Create Anonymous Account</h3>
           
           {success && (
-            <div style={{ color: "#065f46", backgroundColor: "#ecfdf5", padding: "10px", borderRadius: "8px", fontSize: "11px", marginBottom: "12px", border: "1px solid #10b981", lineHeight: "1.4" }}>
+            <div className="p-2.5 rounded-lg border text-[11px] mb-3 leading-normal text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-900/50">
               {success}
             </div>
           )}
@@ -189,14 +189,13 @@ export default function CreateAccount() {
             <div className="field">
               <label>Email (required, for OTP resets)</label>
               <input 
-                className="input" 
+                className={`input ${isGoogleSignUp ? "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 cursor-not-allowed" : ""}`}
                 type="email" 
                 required 
                 disabled={isGoogleSignUp}
                 value={email} 
                 onChange={e=>setEmail(e.target.value)} 
                 placeholder="e.g. your-email@domain.com" 
-                style={isGoogleSignUp ? { backgroundColor: "#f1f5f9", cursor: "not-allowed", color: "#475569" } : {}}
               />
               {isGoogleSignUp && (
                 <button
@@ -267,7 +266,7 @@ export default function CreateAccount() {
 
               {!isGoogleSignUp && (
                 <>
-                  <div style={{ margin: "8px 0", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>or</div>
+                  <div className="my-2 text-center text-slate-400 dark:text-slate-500 text-xs">or</div>
                   <div id="google-signup-btn" style={{ minHeight: 40 }}></div>
                 </>
               )}

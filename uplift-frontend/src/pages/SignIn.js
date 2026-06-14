@@ -189,7 +189,7 @@ export default function SignIn() {
                 <label style={{ margin: 0 }}>Password</label>
                 <span 
                   onClick={() => navigate("/forgot-password")} 
-                  style={{ fontSize: 12, color: "#0b5cff", cursor: "pointer", textDecoration: "underline" }}
+                  className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 cursor-pointer underline"
                 >
                   Forgot password?
                 </span>
@@ -220,7 +220,7 @@ export default function SignIn() {
                 </button>
               </div>
               
-              <div style={{ margin: "8px 0", textAlign: "center", color: "#94a3b8", fontSize: 13 }}>or</div>
+              <div className="my-2 text-center text-slate-400 dark:text-slate-500 text-xs">or</div>
               
               <div id="google-signin-btn" style={{ minHeight: 40 }}></div>
             </div>

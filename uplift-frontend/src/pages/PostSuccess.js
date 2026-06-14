@@ -61,62 +61,62 @@ export default function PostSuccess() {
     <div className="max-w-3xl mx-auto px-6 py-8">
       {/* Back Button */}
       <div className="mb-6">
-        <Link to="/success" className="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800 transition">
+        <Link to="/success" className="inline-flex items-center text-sm font-semibold text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition">
           &larr; Back to Success Stories
         </Link>
       </div>
 
       <header className="mb-8">
-        <h1 className="text-3xl font-extrabold text-slate-900">Share Your Success Story</h1>
-        <p className="text-slate-600 mt-2 text-lg">Inspire others by showing how you overcame emotional and mental challenges.</p>
+        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100">Share Your Success Story</h1>
+        <p className="text-slate-600 dark:text-slate-400 mt-2 text-lg">Inspire others by showing how you overcame emotional and mental challenges.</p>
       </header>
 
-      <section className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 sm:p-8">
+      <section className="bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Story Title</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Story Title</label>
             <input
               type="text"
               placeholder="e.g., Finding light after a year of isolation"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm bg-slate-50/50"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-slate-100"
             />
           </div>
           
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Your Journey / Experience</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Your Journey / Experience</label>
             <textarea
               placeholder="Describe your struggle, the steps you took to improve, and how you feel now..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               required
               rows={8}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm bg-slate-50/50 resize-none leading-relaxed"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 resize-none leading-relaxed"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-semibold text-slate-700">Tags (comma separated)</label>
+            <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">Tags (comma separated)</label>
             <input
               type="text"
               placeholder="e.g., anxiety, depression, meditation"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm bg-slate-50/50"
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition text-sm bg-slate-50/50 dark:bg-slate-950 text-slate-800 dark:text-slate-100"
             />
           </div>
 
           <button 
             type="submit" 
             disabled={loading}
-            className="self-start rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow hover:bg-emerald-700 disabled:bg-slate-300 transition duration-200 mt-2"
+            className="self-start rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 dark:disabled:text-slate-500 transition duration-200 mt-2"
           >
             {loading ? "Posting..." : "Post Success Story"}
           </button>
         </form>
-        {err && <p className="mt-4 text-sm font-semibold text-red-600 bg-red-50 border border-red-100 p-3 rounded-lg">{err}</p>}
+        {err && <p className="mt-4 text-sm font-semibold text-red-600 bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/50 p-3 rounded-lg">{err}</p>}
       </section>
     </div>
   );

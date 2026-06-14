@@ -96,30 +96,30 @@ export default function Mindfulness() {
     <div className="page-bg min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <header className="mb-6">
-          <Link to="/" className="text-sm text-blue-600 hover:underline">&larr; Back to Home</Link>
-          <h1 className="text-2xl font-semibold text-blue-800 mt-2">Mindfulness</h1>
+          <Link to="/" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; Back to Home</Link>
+          <h1 className="text-2xl font-semibold text-blue-800 dark:text-blue-400 mt-2">Mindfulness</h1>
           <p className="muted-blue mt-1">Short practices, quotes, and quick grounding tools.</p>
         </header>
 
         <section className="card mb-6">
-          <h2 className="text-lg font-semibold text-blue-800">Daily Quotes</h2>
+          <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-400">Daily Quotes</h2>
           <div className="mt-3 space-y-3">
             {quotes.map((q, i) => (
               <div key={i} className="widget">
-                <div className="text-sm text-slate-700">“{q}”</div>
+                <div className="text-sm text-slate-700 dark:text-slate-300">“{q}”</div>
               </div>
             ))}
           </div>
         </section>
 
         <section className="card mb-6">
-          <h2 className="text-lg font-semibold text-blue-800">Quick Exercises</h2>
+          <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-400">Quick Exercises</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {exercises.map((ex, i) => (
-              <article key={i} className="p-4 rounded-lg border border-blue-100 bg-white shadow-sm flex flex-col justify-between">
+              <article key={i} className="p-4 rounded-lg border border-blue-100 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm flex flex-col justify-between">
                 <div>
-                  <div className="font-semibold text-blue-700">{ex.title}</div>
-                  <div className="text-sm text-slate-600 mt-1">{ex.desc}</div>
+                  <div className="font-semibold text-blue-700 dark:text-blue-400">{ex.title}</div>
+                  <div className="text-sm text-slate-600 dark:text-slate-350 mt-1">{ex.desc}</div>
                 </div>
                 <button onClick={() => handleStart(ex)} className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm transition self-start">
                   Start
@@ -130,8 +130,8 @@ export default function Mindfulness() {
         </section>
 
         <section className="card">
-          <h2 className="text-lg font-semibold text-blue-800">Notes & Prompts</h2>
-          <ul className="mt-3 list-disc list-inside text-slate-600 space-y-1.5 text-xs">
+          <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-400">Notes & Prompts</h2>
+          <ul className="mt-3 list-disc list-inside text-slate-600 dark:text-slate-350 space-y-1.5 text-xs">
             <li>Write 3 things you noticed in 5 minutes of stillness.</li>
             <li>When you feel reactive, try a 4-count breath: inhale 4, hold 4, exhale 4.</li>
             <li>Keep a short log: 1 positive observation per day.</li>
@@ -142,15 +142,15 @@ export default function Mindfulness() {
       {/* Guided Exercise Overlay Modal */}
       {activeExercise && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all duration-300">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h2 className="text-sm font-bold text-blue-800 flex items-center gap-1.5">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950">
+              <h2 className="text-sm font-bold text-blue-800 dark:text-blue-400 flex items-center gap-1.5">
                 <span>🧘</span> {activeExercise.title}
               </h2>
               <button
                 onClick={closeExercise}
-                className="text-slate-400 hover:text-slate-600 transition"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -169,27 +169,27 @@ export default function Mindfulness() {
                       {/* Animated circle */}
                       <div className="relative flex items-center justify-center w-36 h-36">
                         <div 
-                          className={`absolute rounded-full bg-blue-100/60 border border-blue-200 transition-all duration-[4000ms] ease-in-out ${
-                            breathPhase === "Inhale" ? "w-32 h-32 scale-110 bg-blue-200/80" :
-                            breathPhase === "Hold" ? "w-32 h-32 scale-110 bg-indigo-100" :
+                          className={`absolute rounded-full bg-blue-100/60 border border-blue-200 dark:bg-blue-950/30 dark:border-blue-900/55 transition-all duration-[4000ms] ease-in-out ${
+                            breathPhase === "Inhale" ? "w-32 h-32 scale-110 bg-blue-200/80 dark:bg-blue-900/60" :
+                            breathPhase === "Hold" ? "w-32 h-32 scale-110 bg-indigo-100 dark:bg-indigo-950/60" :
                             "w-20 h-20 scale-90"
                           }`}
                         />
-                        <span className="z-10 text-xs font-bold text-blue-800 uppercase tracking-wider animate-pulse">
+                        <span className="z-10 text-xs font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wider animate-pulse">
                           {breathPhase}
                         </span>
                       </div>
-                      <div className="text-xs text-slate-500 font-semibold">
-                        Time Remaining: <span className="font-mono text-sm font-bold text-indigo-600">{breathTimeLeft}s</span>
+                      <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold">
+                        Time Remaining: <span className="font-mono text-sm font-bold text-indigo-600 dark:text-indigo-400">{breathTimeLeft}s</span>
                       </div>
                     </>
                   ) : (
                     <div className="space-y-3">
-                      <div className="w-12 h-12 bg-emerald-50 text-emerald-500 border border-emerald-100 rounded-full flex items-center justify-center text-xl mx-auto shadow-inner animate-fade-in">
+                      <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50 rounded-full flex items-center justify-center text-xl mx-auto shadow-inner animate-fade-in">
                         ✓
                       </div>
-                      <h4 className="text-sm font-bold text-slate-800">Breath Session Completed</h4>
-                      <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Breath Session Completed</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
                         Excellent work taking a moment for yourself. Notice how your body feels now.
                       </p>
                     </div>
@@ -205,14 +205,14 @@ export default function Mindfulness() {
                       <span 
                         key={idx} 
                         className={`h-1.5 rounded-full transition-all duration-300 ${
-                          idx === scanStep ? "w-6 bg-blue-600" : "w-2 bg-slate-200"
+                          idx === scanStep ? "w-6 bg-blue-600" : "w-2 bg-slate-200 dark:bg-slate-800"
                         }`}
                       />
                     ))}
                   </div>
 
                   <div className="min-h-[100px] flex items-center justify-center">
-                    <p className="text-xs text-slate-600 leading-relaxed max-w-xs">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-xs">
                       {bodyScanSteps[scanStep]}
                     </p>
                   </div>
@@ -221,7 +221,7 @@ export default function Mindfulness() {
                     {scanStep > 0 && (
                       <button 
                         onClick={() => setScanStep((s) => s - 1)}
-                        className="px-4 py-1.5 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50 transition"
+                        className="px-4 py-1.5 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-950 transition"
                       >
                         Back
                       </button>
@@ -257,58 +257,58 @@ export default function Mindfulness() {
                       className="space-y-3"
                     >
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase">5 things you can SEE</label>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">5 things you can SEE</label>
                         <input 
                           type="text" 
                           required
                           value={groundingInputs.see}
                           onChange={(e) => setGroundingInputs(p => ({ ...p, see: e.target.value }))}
                           placeholder="e.g. a green plant, desk lamp..."
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase">4 things you can FEEL/TOUCH</label>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">4 things you can FEEL/TOUCH</label>
                         <input 
                           type="text" 
                           required
                           value={groundingInputs.touch}
                           onChange={(e) => setGroundingInputs(p => ({ ...p, touch: e.target.value }))}
                           placeholder="e.g. soft sweater, phone screen..."
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase">3 things you can HEAR</label>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">3 things you can HEAR</label>
                         <input 
                           type="text" 
                           required
                           value={groundingInputs.hear}
                           onChange={(e) => setGroundingInputs(p => ({ ...p, hear: e.target.value }))}
                           placeholder="e.g. hum of refrigerator, traffic..."
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase">2 things you can SMELL</label>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">2 things you can SMELL</label>
                         <input 
                           type="text" 
                           required
                           value={groundingInputs.smell}
                           onChange={(e) => setGroundingInputs(p => ({ ...p, smell: e.target.value }))}
                           placeholder="e.g. coffee aroma, fresh rain..."
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-500 uppercase">1 thing you can TASTE</label>
+                        <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">1 thing you can TASTE</label>
                         <input 
                           type="text" 
                           required
                           value={groundingInputs.taste}
                           onChange={(e) => setGroundingInputs(p => ({ ...p, taste: e.target.value }))}
                           placeholder="e.g. mint candy, clean water..."
-                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full mt-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-100"
                         />
                       </div>
                       <button 
@@ -320,16 +320,16 @@ export default function Mindfulness() {
                     </form>
                   ) : (
                     <div className="space-y-4 text-center py-4">
-                      <div className="w-12 h-12 bg-emerald-50 text-emerald-500 border border-emerald-100 rounded-full flex items-center justify-center text-xl mx-auto shadow-inner animate-fade-in">
+                      <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-500 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/50 rounded-full flex items-center justify-center text-xl mx-auto shadow-inner animate-fade-in">
                         ✓
                       </div>
-                      <h4 className="text-sm font-bold text-slate-800">Grounding Session Completed</h4>
-                      <p className="text-[11px] text-slate-500 max-w-xs mx-auto leading-relaxed">
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Grounding Session Completed</h4>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">
                         Well done! Focusing on your 5 senses pulls your attention away from racing thoughts and anchors you safely in the present moment.
                       </p>
                       <button 
                         onClick={closeExercise}
-                        className="px-6 py-1.5 bg-slate-100 border border-slate-200 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition"
+                        className="px-6 py-1.5 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-950 text-slate-700 dark:text-slate-355 text-xs font-bold rounded-xl transition"
                       >
                         Close
                       </button>

@@ -301,14 +301,14 @@ export default function CommunityChat() {
   // UI
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] bg-slate-50 text-slate-500 p-8">
-        <div className="p-3 bg-rose-50 rounded-full text-rose-500 mb-3 shadow-inner">
+      <div className="flex flex-col items-center justify-center min-h-[400px] bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 p-8">
+        <div className="p-3 bg-rose-50 dark:bg-rose-950/20 rounded-full text-rose-500 mb-3 shadow-inner">
           <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
           </svg>
         </div>
-        <h3 className="text-xs font-bold text-slate-800">Connection Error</h3>
-        <p className="text-[11px] text-slate-500 max-w-[240px] text-center mt-1 leading-normal">
+        <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100">Connection Error</h3>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[240px] text-center mt-1 leading-normal">
           {error}
         </p>
         <button
@@ -323,9 +323,9 @@ export default function CommunityChat() {
 
   if (!community && loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-96 bg-slate-50 text-slate-500">
+      <div className="flex flex-col items-center justify-center h-96 bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400">
         <div className="relative w-10 h-10 mb-4">
-          <div className="absolute inset-0 border-4 border-indigo-200 rounded-full"></div>
+          <div className="absolute inset-0 border-4 border-indigo-200 dark:border-indigo-950/50 rounded-full"></div>
           <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
         </div>
         <p className="text-xs font-semibold">Loading community space...</p>
@@ -333,37 +333,37 @@ export default function CommunityChat() {
     );
   }
 
-  if (!community) return <div className="p-8 text-center text-xs text-slate-400">Loading community...</div>;
+  if (!community) return <div className="p-8 text-center text-xs text-slate-400 dark:text-slate-550">Loading community...</div>;
 
   return (
-    <div className="flex bg-slate-50 font-sans w-full" style={{ height: "calc(100vh - 69px)" }}>
+    <div className="flex bg-slate-50 dark:bg-slate-950 font-sans w-full" style={{ height: "calc(100vh - 69px)" }}>
       {/* Left Sidebar - Details & Members */}
-      <div className="w-80 border-r border-slate-200 flex flex-col bg-white h-full hidden lg:flex flex-shrink-0">
+      <div className="w-80 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900 h-full hidden lg:flex flex-shrink-0">
         {/* Community Info */}
-        <div className="p-6 border-b border-slate-100 flex flex-col items-center flex-shrink-0">
+        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex flex-col items-center flex-shrink-0">
           <div className="bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-bold text-lg w-16 h-16 rounded-2xl flex items-center justify-center shadow-md mb-4">
             {(community.name || "??").slice(0, 2).toUpperCase()}
           </div>
-          <h3 className="text-sm font-bold text-slate-800 text-center px-2 truncate w-full">
+          <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100 text-center px-2 truncate w-full">
             {community.name}
           </h3>
-          <p className="text-[11px] text-slate-500 text-center mt-2 leading-relaxed max-h-24 overflow-y-auto px-1">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 text-center mt-2 leading-relaxed max-h-24 overflow-y-auto px-1">
             {community.description || "Welcome to our supportive space. Let's grow together!"}
           </p>
-          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mt-3 w-fit">
+          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 px-3 py-1 rounded-full mt-3 w-fit">
             {membersCount} members
           </span>
         </div>
 
         {/* Rules section */}
         {Array.isArray(community.rules) && community.rules.length > 0 && (
-          <div className="p-5 border-b border-slate-100 bg-slate-50/40 max-h-48 overflow-y-auto">
-            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">
+          <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/20 max-h-48 overflow-y-auto">
+            <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2.5">
               Community Rules
             </h4>
             <ol className="list-decimal list-inside space-y-1.5">
               {community.rules.map((rule, idx) => (
-                <li key={idx} className="text-[11px] text-slate-600 font-semibold leading-relaxed">
+                <li key={idx} className="text-[11px] text-slate-600 dark:text-slate-300 font-semibold leading-relaxed">
                   {rule}
                 </li>
               ))}
@@ -372,8 +372,8 @@ export default function CommunityChat() {
         )}
 
         {/* Member list section */}
-        <div className="p-4 border-b border-slate-100 flex-shrink-0">
-          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+          <h4 className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             Room Members
           </h4>
         </div>
@@ -382,27 +382,27 @@ export default function CommunityChat() {
             community.members.map((m, i) => {
               const initials = String(m || "U").slice(0, 2).toUpperCase();
               return (
-                <div key={i} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 transition duration-150">
+                <div key={i} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-950 transition duration-150">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] text-white shadow-sm flex-shrink-0 ${getAvatarColor(m || "anonymous")}`}>
                     {initials}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-semibold text-slate-700 truncate">{m}</p>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300 truncate">{m}</p>
                   </div>
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
                 </div>
               );
             })
           ) : (
-            <div className="text-center text-[11px] text-slate-400 py-6">No members here yet.</div>
+            <div className="text-center text-[11px] text-slate-400 dark:text-slate-500 py-6">No members here yet.</div>
           )}
         </div>
 
         {/* Leave button */}
-        <div className="p-4 border-t border-slate-100 flex-shrink-0">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex-shrink-0">
           <button
             onClick={() => navigate('/community-chat')}
-            className="w-full py-2 bg-slate-50 hover:bg-rose-50 text-slate-500 hover:text-rose-600 border border-slate-200 hover:border-rose-100 font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2"
+            className="w-full py-2 bg-slate-50 dark:bg-slate-950 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 border border-slate-200 dark:border-slate-800 hover:border-rose-100 dark:hover:border-rose-900/50 font-bold text-xs rounded-xl shadow-sm transition flex items-center justify-center gap-2"
           >
             <span>🚪</span> Leave Room
           </button>
@@ -410,13 +410,13 @@ export default function CommunityChat() {
       </div>
 
       {/* Right Panel - Chat Workspace */}
-      <div className="flex-1 flex flex-col h-full bg-slate-50">
+      <div className="flex-1 flex flex-col h-full bg-slate-50 dark:bg-slate-950">
         {/* Chat Header */}
-        <header className="h-14 border-b border-slate-200 bg-white px-4 md:px-6 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
+        <header className="h-14 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 md:px-6 flex items-center justify-between shadow-sm z-10 flex-shrink-0">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/community-chat')}
-              className="lg:hidden p-1.5 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition mr-1"
+              className="lg:hidden p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition mr-1"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
@@ -426,23 +426,23 @@ export default function CommunityChat() {
               {(community.name || "??").slice(0, 2).toUpperCase()}
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-800 leading-tight">
+              <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">
                 {community.name}
               </h3>
               <div className="flex items-center gap-1 mt-0.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-[9px] text-slate-400 font-medium">{membersCount} members</span>
+                <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium">{membersCount} members</span>
               </div>
             </div>
           </div>
 
           {/* Current User Badge */}
           {username && (
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
+            <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-2.5 py-1">
               <div className={`w-5 h-5 rounded-full ${getAvatarColor(username)} flex items-center justify-center text-[9px] font-bold text-white shadow-sm`}>
                 {String(username).slice(0, 1).toUpperCase()}
               </div>
-              <span className="text-[10px] font-semibold text-slate-600 truncate max-w-[80px]">
+              <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300 truncate max-w-[80px]">
                 {username}
               </span>
             </div>
@@ -450,10 +450,10 @@ export default function CommunityChat() {
         </header>
 
         {/* Messages list */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 space-y-4 bg-slate-50/50 dark:bg-slate-950/50">
           {grouped.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-400">
-              <svg className="w-12 h-12 text-slate-300 mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
+              <svg className="w-12 h-12 text-slate-300 dark:text-slate-700 mb-2 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
               <p className="text-xs">No messages yet. Say hello to get started!</p>
@@ -479,7 +479,7 @@ export default function CommunityChat() {
                   </div>
 
                   <div className={`max-w-[70%] ${isMe ? "text-right" : ""}`}>
-                    <span className="text-[9px] text-slate-400 font-medium px-1 block mb-0.5">
+                    <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium px-1 block mb-0.5">
                       {g.sender}
                     </span>
                     <div className="space-y-1 inline-flex flex-col items-end">
@@ -489,11 +489,11 @@ export default function CommunityChat() {
                           className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm block text-left ${
                             isMe
                               ? "bg-indigo-600 text-white rounded-tr-none"
-                              : "bg-white border border-slate-100 text-slate-800 rounded-tl-none"
+                              : "bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none"
                           }`}
                         >
                           <p className="whitespace-pre-wrap">{it.text}</p>
-                          <span className={`text-[8px] block mt-1 text-right ${isMe ? "text-indigo-200" : "text-slate-400"}`}>
+                          <span className={`text-[8px] block mt-1 text-right ${isMe ? "text-indigo-200" : "text-slate-400 dark:text-slate-500"}`}>
                             {new Date(it.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
@@ -507,7 +507,7 @@ export default function CommunityChat() {
 
           {/* Typing Indicator */}
           {Array.from(typingUsers).length > 0 && (
-            <div className="flex items-center gap-1 text-[10px] text-slate-400 italic px-2 py-1 bg-white border border-slate-100 rounded-full w-fit shadow-sm animate-pulse">
+            <div className="flex items-center gap-1 text-[10px] text-slate-400 dark:text-slate-500 italic px-2 py-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-full w-fit shadow-sm animate-pulse">
               <span className="flex gap-0.5">
                 <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce"></span>
                 <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
@@ -521,7 +521,7 @@ export default function CommunityChat() {
         </div>
 
         {/* Message Input Form */}
-        <div className="p-3 border-t border-slate-200 bg-white">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
           <form onSubmit={handleSend} className="flex gap-2">
             <input
               type="text"
@@ -529,7 +529,7 @@ export default function CommunityChat() {
               onChange={(e) => handleTyping(e.target.value)}
               placeholder={username ? "Write a message..." : "Sign in to chat"}
               disabled={!username}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400 transition"
+              className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 transition"
             />
             <button
               type="submit"

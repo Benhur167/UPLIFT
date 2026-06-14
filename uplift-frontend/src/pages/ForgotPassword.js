@@ -118,7 +118,7 @@ export default function ForgotPassword() {
               </div>
 
               {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
-              {info && <div style={{ color: "#047857", background: "#ecfdf5", padding: 10, borderRadius: 8, border: "1px solid #a7f3d0", fontWeight: 600, fontSize: 13, marginBottom: 12 }}>{info}</div>}
+              {info && <div className="p-2.5 rounded-lg border font-semibold text-xs mb-3 text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-900/50">{info}</div>}
 
               <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
                 <button className="btn primary" type="submit" disabled={loading} style={{ flex: 1 }}>
@@ -136,7 +136,7 @@ export default function ForgotPassword() {
             </form>
           ) : (
             <form onSubmit={handleResetPassword}>
-              <div style={{ marginBottom: 12, fontSize: 13, color: "#475569" }}>
+              <div className="mb-3 text-xs text-slate-600 dark:text-slate-400">
                 An OTP was sent to <strong>{email}</strong>.
               </div>
 
@@ -165,7 +165,7 @@ export default function ForgotPassword() {
               </div>
 
               {error && <div className="error" style={{ marginBottom: 12 }}>{error}</div>}
-              {info && <div style={{ color: "#047857", background: "#ecfdf5", padding: 10, borderRadius: 8, border: "1px solid #a7f3d0", fontWeight: 600, fontSize: 13, marginBottom: 12 }}>{info}</div>}
+              {info && <div className="p-2.5 rounded-lg border font-semibold text-xs mb-3 text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-900/50">{info}</div>}
 
               <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
                 <button className="btn primary" type="submit" disabled={loading} style={{ flex: 1 }}>

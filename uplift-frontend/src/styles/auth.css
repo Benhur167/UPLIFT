@@ -93,3 +93,51 @@
   .auth-card { grid-template-columns: 1fr; padding:18px; }
   .auth-form { margin-top:6px; }
 }
+
+/* dark mode overrides */
+.dark .auth-page {
+  background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+  color: #cbd5e1;
+}
+.dark .auth-card {
+  background: #0f172a;
+  border-color: #1e293b;
+  box-shadow: none;
+}
+.dark .brand h1 {
+  color: #f1f5f9;
+}
+.dark .brand p, .dark .small {
+  color: #94a3b8;
+}
+.dark .note {
+  color: #cbd5e1;
+}
+.dark .auth-form {
+  background: #020617;
+  border-color: #1e293b;
+}
+.dark .field label {
+  color: #cbd5e1;
+}
+.dark .input, .dark .input[type="password"] {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+.dark .btn.ghost {
+  color: #f1f5f9;
+  border-color: #334155;
+}
+.dark .btn.ghost:hover {
+  background: #1e293b;
+}
+.dark .error {
+  color: #f87171;
+  background: rgba(127, 29, 29, 0.4);
+  border-color: rgba(239, 68, 68, 0.4);
+}

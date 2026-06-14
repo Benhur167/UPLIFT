@@ -431,21 +431,21 @@ export default function SupportSession() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/40 font-sans">
+    <div className="min-h-screen bg-slate-50/40 dark:bg-slate-950 font-sans">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Navigation back and header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <button
               onClick={() => navigate("/support")}
-              className="inline-flex items-center text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition mb-2"
+              className="inline-flex items-center text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition mb-2"
             >
               &larr; Back to Support
             </button>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center flex-wrap gap-2.5">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight flex items-center flex-wrap gap-2.5">
               <span>Support Session Workspace</span>
               <span className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm self-center leading-none ${
-                socketConnected ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"
+                socketConnected ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" : "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300"
               }`} style={{ transform: "translateY(1px)" }}>
                 <span className={`h-1.5 w-1.5 rounded-full ${socketConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`}></span>
                 {socketConnected ? "Live" : "Offline"}
@@ -457,7 +457,7 @@ export default function SupportSession() {
             <button
               onClick={fetchSession}
               disabled={refreshing}
-              className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 active:bg-slate-100 disabled:opacity-60 transition flex items-center gap-1.5"
+              className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-950 active:bg-slate-100 dark:active:bg-slate-950 disabled:opacity-60 transition flex items-center gap-1.5"
             >
               {refreshing ? (
                 <>
@@ -473,12 +473,12 @@ export default function SupportSession() {
                 </>
               )}
             </button>
-            <span className="text-[11px] text-slate-400 font-mono bg-slate-100 px-2 py-1 rounded">ID: {id?.slice(-8)}</span>
+            <span className="text-[11px] text-slate-400 dark:text-slate-500 font-mono bg-slate-100 dark:bg-slate-900 px-2 py-1 rounded">ID: {id?.slice(-8)}</span>
           </div>
         </div>
 
         {statusMsg && (
-          <div className="mb-6 p-3 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+          <div className="mb-6 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-emerald-700 dark:text-emerald-400 text-xs font-semibold flex items-center gap-2 animate-fade-in">
             <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -491,21 +491,21 @@ export default function SupportSession() {
           <div className="lg:col-span-7 space-y-6">
             
             {/* Call Callback Request Card */}
-            <div className="bg-white border border-slate-100 shadow-xl shadow-slate-100/40 rounded-2xl p-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/40 dark:shadow-none rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-xl bg-amber-50 text-amber-600">
+                <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Request Callback</h3>
-                  <p className="text-[10px] text-slate-400">Request a phone call callback from UPLIFT support team</p>
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">Request Callback</h3>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">Request a phone call callback from UPLIFT support team</p>
                 </div>
               </div>
 
               {phoneError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+                <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 text-xs font-semibold flex items-center gap-2 animate-fade-in">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -514,10 +514,10 @@ export default function SupportSession() {
               )}
 
               {session?.requestedCall ? (
-                <div className="bg-amber-50/40 border border-amber-200 rounded-xl p-4 leading-relaxed text-xs text-slate-700">
+                <div className="bg-amber-50/40 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/50 rounded-xl p-4 leading-relaxed text-xs text-slate-700 dark:text-slate-300">
                   <div className="grid grid-cols-2 gap-4">
                     <div><strong>Phone:</strong> {session.requestedCall.phone}</div>
-                    <div><strong>Status:</strong> <span className="font-bold text-amber-800 uppercase text-[9px] bg-amber-100 px-1.5 py-0.5 rounded">{session.requestedCall.status}</span></div>
+                    <div><strong>Status:</strong> <span className="font-bold text-amber-800 dark:text-amber-300 uppercase text-[9px] bg-amber-100 dark:bg-amber-900/60 px-1.5 py-0.5 rounded">{session.requestedCall.status}</span></div>
                     <div><strong>Preferred Time:</strong> {session.requestedCall.preferredAt ? new Date(session.requestedCall.preferredAt).toLocaleString() : "As soon as possible"}</div>
                     {session.requestedCall.adminAssigned && <div><strong>Assigned Support:</strong> {session.requestedCall.adminAssigned}</div>}
                   </div>
@@ -526,22 +526,22 @@ export default function SupportSession() {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-slate-600">Phone Number</label>
+                      <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Phone Number</label>
                       <input
                         type="tel"
                         value={callPhone}
                         onChange={(e) => setCallPhone(e.target.value)}
                         placeholder="e.g. +1 555-0199"
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 rounded-lg text-xs"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-amber-500 rounded-lg text-xs"
                       />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                      <label className="text-[11px] font-semibold text-slate-600">Preferred Time (Optional)</label>
+                      <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Preferred Time (Optional)</label>
                       <input
                         type="datetime-local"
                         value={preferredAt}
                         onChange={(e) => setPreferredAt(e.target.value)}
-                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500 rounded-lg text-xs text-slate-700"
+                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-amber-500 rounded-lg text-xs text-slate-700 dark:text-slate-300"
                       />
                     </div>
                   </div>
@@ -557,21 +557,21 @@ export default function SupportSession() {
             </div>
 
             {/* Book Psychiatrist Card */}
-            <div className="bg-white border border-slate-100 shadow-xl shadow-slate-100/40 rounded-2xl p-6">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-xl shadow-slate-100/40 dark:shadow-none rounded-2xl p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2 rounded-xl bg-emerald-50 text-emerald-600">
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Book Psychiatrist / Therapist</h3>
-                  <p className="text-[10px] text-slate-400">Schedule video sessions with professional therapists</p>
+                  <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 uppercase tracking-wider">Book Psychiatrist / Therapist</h3>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-500">Schedule video sessions with professional therapists</p>
                 </div>
               </div>
 
               {bookingError && (
-                <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+                <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-100 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 text-xs font-semibold flex items-center gap-2 animate-fade-in">
                   <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
@@ -582,36 +582,36 @@ export default function SupportSession() {
               <div className="space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-slate-600">Choose Specialist</label>
+                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Choose Specialist</label>
                     <select
                       value={booking.psychiatristId}
                       onChange={(e) => setBooking({ psychiatristId: e.target.value })}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-800"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-800 dark:text-slate-200"
                     >
                       <option value="">Choose therapist</option>
                       <option value="doc-1">Dr. Anya N (Therapist)</option>
-                      <option value="doc-2">Dr. Samir R (Psychiatrist)</option>
+                      <option value="doc-2">Dr. समीर R (Psychiatrist)</option>
                     </select>
                   </div>
                   
                   {/* Predefined single Date selector */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-slate-600">Choose Date</label>
+                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Choose Date</label>
                     <input
                       type="date"
                       value={bookingDate}
                       onChange={(e) => setBookingDate(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-700"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-700 dark:text-slate-300"
                     />
                   </div>
 
                   {/* Predefined hourly Slot selector */}
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[11px] font-semibold text-slate-600">Preferred Time Slot</label>
+                    <label className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Preferred Time Slot</label>
                     <select
                       value={bookingSlotIndex}
                       onChange={(e) => setBookingSlotIndex(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-800"
+                      className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-emerald-500 rounded-lg text-xs text-slate-800 dark:text-slate-200"
                     >
                       <option value="">Choose time slot</option>
                       {TIME_SLOTS.map((s, idx) => (
@@ -631,17 +631,17 @@ export default function SupportSession() {
 
                 {/* Bookings History list */}
                 {Array.isArray(session?.bookings) && session.bookings.length > 0 && (
-                  <div className="pt-4 border-t border-slate-100">
-                    <h4 className="text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2">Bookings History</h4>
+                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h4 className="text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">Bookings History</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {session.bookings.map((b, i) => (
-                        <div key={i} className="bg-slate-50 border border-slate-150 rounded-xl p-3 leading-relaxed text-xs text-slate-600">
+                        <div key={i} className="bg-slate-50 dark:bg-slate-950 border border-slate-150 dark:border-slate-800 rounded-xl p-3 leading-relaxed text-xs text-slate-600 dark:text-slate-350">
                           <div><strong>Specialist:</strong> {b.psychiatristName || b.psychiatristId}</div>
                           <div><strong>From:</strong> {b.slotStart ? new Date(b.slotStart).toLocaleString() : "—"}</div>
                           <div><strong>To:</strong> {b.slotEnd ? new Date(b.slotEnd).toLocaleString() : "—"}</div>
                           {b.status && (
                             <div className="mt-1">
-                              Status: <span className="font-bold uppercase text-[9px] bg-slate-200 px-1 rounded">{b.status}</span>
+                              Status: <span className="font-bold uppercase text-[9px] bg-slate-200 dark:bg-slate-900 text-slate-700 dark:text-slate-300 px-1 rounded">{b.status}</span>
                             </div>
                           )}
                         </div>
@@ -655,20 +655,20 @@ export default function SupportSession() {
 
           {/* Right panel: Integrated chat console (5 cols) */}
           <div className="lg:col-span-5 h-[580px] lg:h-[640px] flex flex-col">
-            <div className="bg-white border border-slate-200 shadow-xl shadow-slate-150/40 rounded-2xl flex flex-col h-full overflow-hidden">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl shadow-slate-150/40 dark:shadow-none rounded-2xl flex flex-col h-full overflow-hidden">
               {/* Chat Header */}
-              <div className="px-4 py-3 border-b border-slate-150 bg-white flex items-center justify-between flex-shrink-0 shadow-sm z-10">
+              <div className="px-4 py-3 border-b border-slate-150 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between flex-shrink-0 shadow-sm z-10">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
+                  <div className="p-1.5 bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 rounded-lg">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-800 leading-tight">Live Support Chat</h3>
+                    <h3 className="text-xs font-bold text-slate-800 dark:text-slate-100 leading-tight">Live Support Chat</h3>
                     <div className="flex items-center gap-1 mt-0.5">
                       <span className={`h-1.5 w-1.5 rounded-full ${adminOnline ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`}></span>
-                      <span className="text-[9px] text-slate-400 font-semibold">{adminOnline ? "Moderator online" : "Moderator offline"}</span>
+                      <span className="text-[9px] text-slate-400 dark:text-slate-550 font-semibold">{adminOnline ? "Moderator online" : "Moderator offline"}</span>
                     </div>
                   </div>
                 </div>
@@ -677,10 +677,10 @@ export default function SupportSession() {
               {/* Chat Messages */}
               <div
                 ref={messagesRef}
-                className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50"
+                className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-slate-950/50"
               >
                 {messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center px-4">
+                  <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500 text-center px-4">
                     <span className="text-2xl mb-1">👋</span>
                     <p className="text-xs">No messages yet. Send a message to introduce yourself to support.</p>
                   </div>
@@ -703,7 +703,7 @@ export default function SupportSession() {
                         </div>
                         <div className={`max-w-[75%] ${isMine ? "text-right" : ""}`}>
                           {!isMine && (
-                            <span className="text-[9px] text-slate-400 font-medium px-1 block mb-0.5">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-medium px-1 block mb-0.5">
                               {m.senderName}
                             </span>
                           )}
@@ -711,12 +711,12 @@ export default function SupportSession() {
                             className={`px-3 py-2 rounded-2xl text-xs leading-relaxed shadow-sm inline-block text-left ${
                               isMine
                                 ? "bg-indigo-600 text-white rounded-tr-none"
-                                : "bg-white border border-slate-100 text-slate-800 rounded-tl-none"
+                                : "bg-white dark:bg-slate-950 dark:border-slate-800 text-slate-800 dark:text-slate-100 rounded-tl-none"
                             }`}
                           >
                             {m.text}
                           </div>
-                          <span className="text-[8px] text-slate-400 block mt-0.5 px-1">
+                          <span className="text-[8px] text-slate-400 dark:text-slate-500 block mt-0.5 px-1">
                             {new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </span>
                         </div>
@@ -727,9 +727,9 @@ export default function SupportSession() {
               </div>
 
               {/* Chat Input */}
-              <div className="p-3 border-t border-slate-200 bg-white flex-shrink-0">
+              <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex-shrink-0">
                 {adminTyping && (
-                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 italic mb-1.5 px-1">
+                  <div className="flex items-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-550 italic mb-1.5 px-1">
                     <span className="flex gap-0.5">
                       <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce"></span>
                       <span className="w-1 h-1 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></span>
@@ -747,7 +747,7 @@ export default function SupportSession() {
                       notifyTyping();
                     }}
                     placeholder="Type your message..."
-                    className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white text-slate-800 placeholder-slate-400 transition"
+                    className="flex-1 bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-950 text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-550 transition"
                   />
                   <button
                     type="submit"

@@ -27,8 +27,8 @@ export default function Articles() {
     <div className="page-bg p-6 min-h-screen">
       <div className="max-w-4xl mx-auto">
         <header className="mb-6">
-          <Link to="/" className="text-sm text-blue-600 hover:underline">&larr; Back to Home</Link>
-          <h1 className="text-2xl font-semibold text-blue-800 mt-2">Articles</h1>
+          <Link to="/" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">&larr; Back to Home</Link>
+          <h1 className="text-2xl font-semibold text-blue-800 dark:text-blue-400 mt-2">Articles</h1>
           <p className="muted-blue mt-1">Short, practical reads to support mental wellbeing.</p>
         </header>
 
@@ -37,8 +37,8 @@ export default function Articles() {
             <article key={i} className="card card-hover flex flex-col">
               <div className="flex justify-between items-start">
                 <div className="flex-1 pr-4">
-                  <h3 className="text-lg font-semibold text-blue-800">{a.title}</h3>
-                  <p className="text-slate-600 mt-1">{a.excerpt}</p>
+                  <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-400">{a.title}</h3>
+                  <p className="text-slate-600 dark:text-slate-300 mt-1">{a.excerpt}</p>
                 </div>
                 <div>
                   <button onClick={() => setActiveArticle(a)} className="btn-soft">Read</button>
@@ -52,15 +52,15 @@ export default function Articles() {
       {/* Article Detail Modal */}
       {activeArticle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 transition-all duration-300">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden border border-slate-100 dark:border-slate-800 animate-in fade-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h2 className="text-sm font-bold text-blue-800">
+            <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-950">
+              <h2 className="text-sm font-bold text-blue-800 dark:text-blue-400">
                 Mental Wellness Article
               </h2>
               <button
                 onClick={() => setActiveArticle(null)}
-                className="text-slate-400 hover:text-slate-600 transition"
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -70,17 +70,17 @@ export default function Articles() {
 
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto max-h-[70vh]">
-              <h1 className="text-xl font-black text-slate-800 mb-3">{activeArticle.title}</h1>
-              <p className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded w-fit mb-4">
+              <h1 className="text-xl font-black text-slate-800 dark:text-slate-100 mb-3">{activeArticle.title}</h1>
+              <p className="text-xs font-semibold text-indigo-600 bg-indigo-50 dark:text-indigo-400 dark:bg-indigo-950/40 px-2.5 py-1 rounded w-fit mb-4">
                 {activeArticle.excerpt}
               </p>
-              <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">
+              <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed whitespace-pre-line">
                 {activeArticle.content}
               </p>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-slate-100 flex justify-end bg-slate-50">
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-950">
               <button
                 onClick={() => setActiveArticle(null)}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition"
