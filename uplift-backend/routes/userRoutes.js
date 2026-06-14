@@ -6,38 +6,104 @@ const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const authCheck = require('../middleware/authCheck');
 
-// Helper to send email (strict SMTP with console fallback)
+// Helper to send email (supports Resend API, Brevo API, SMTP, with console fallback)
 async function sendOTPEmail(email, otpCode) {
   console.log(`[OTP Code Generated] Email: ${email} | Code: ${otpCode}`);
 
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn('[OTP WARNING] SMTP credentials are missing on the server. OTP code logged to console.');
-    return; // Fall back to console log
-  }
+  const subject = "Uplift Password Reset OTP Code";
+  const htmlContent = `<p>Your OTP code for password reset is: <b>${otpCode}</b></p><p>It will expire in 10 minutes.</p>`;
+  const textContent = `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`;
 
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS
+  // 1. Try Resend API if API Key is present (HTTP based, works on Render free tier)
+  if (process.env.RESEND_API_KEY) {
+    try {
+      console.log('Attempting to send OTP email via Resend API...');
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+        },
+        body: JSON.stringify({
+          from: 'Uplift <onboarding@resend.dev>',
+          to: [email],
+          subject: subject,
+          html: htmlContent
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log('OTP Email sent successfully via Resend API:', data);
+        return;
+      } else {
+        console.error('[Resend API Error]', data);
       }
-    });
-
-    await transporter.sendMail({
-      from: `"Uplift Support" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: "Uplift Password Reset OTP Code",
-      text: `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`,
-      html: `<p>Your OTP code for password reset is: <b>${otpCode}</b></p><p>It will expire in 10 minutes.</p>`
-    });
-    console.log('OTP Email sent successfully via SMTP');
-  } catch (err) {
-    console.error('[OTP ERROR] Failed to send email via SMTP:', err.message);
-    console.log(`[OTP FALLBACK] You can retrieve the OTP from server logs: ${otpCode}`);
+    } catch (err) {
+      console.error('[Resend Connection Error]', err.message);
+    }
   }
+
+  // 2. Try Brevo API if API Key is present (HTTP based, works on Render free tier)
+  if (process.env.BREVO_API_KEY) {
+    try {
+      console.log('Attempting to send OTP email via Brevo API...');
+      const senderEmail = process.env.SMTP_USER || 'no-reply@uplift-emotional-support.org';
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.BREVO_API_KEY,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: 'Uplift Support', email: senderEmail },
+          to: [{ email: email, name: 'Uplift User' }],
+          subject: subject,
+          htmlContent: htmlContent
+        })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        console.log('OTP Email sent successfully via Brevo API:', data);
+        return;
+      } else {
+        console.error('[Brevo API Error]', data);
+      }
+    } catch (err) {
+      console.error('[Brevo Connection Error]', err.message);
+    }
+  }
+
+  // 3. Fallback to standard SMTP if credentials are present
+  if (process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      console.log('Attempting to send OTP email via Gmail SMTP...');
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
+        }
+      });
+
+      await transporter.sendMail({
+        from: `"Uplift Support" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: subject,
+        text: textContent,
+        html: htmlContent
+      });
+      console.log('OTP Email sent successfully via SMTP');
+      return;
+    } catch (err) {
+      console.error('[OTP ERROR] Failed to send email via SMTP:', err.message);
+    }
+  }
+
+  console.warn('[OTP WARNING] All email services failed or were not configured. OTP code logged to console.');
+  console.log(`[OTP FALLBACK] You can retrieve the OTP from server logs: ${otpCode}`);
 }
 
 // POST /api/users/signup
