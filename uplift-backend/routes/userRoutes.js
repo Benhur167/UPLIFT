@@ -144,7 +144,10 @@ router.post('/forgot-password', async (req, res) => {
     user.otp = { code: otpCode, expiresAt };
     await user.save();
 
-    await sendOTPEmail(email, otpCode);
+    // Send email asynchronously in the background so SMTP timeouts don't block the HTTP response
+    sendOTPEmail(email, otpCode).catch(err => {
+      console.error('[Background OTP Send Error]', err.message);
+    });
 
     res.json({ message: 'If the email exists, an OTP has been sent.' });
   } catch (e) {
