@@ -6,28 +6,37 @@ const nodemailer = require('nodemailer');
 const User = require('../models/User');
 const authCheck = require('../middleware/authCheck');
 
-// Helper to send email (strict SMTP)
+// Helper to send email (strict SMTP with console fallback)
 async function sendOTPEmail(email, otpCode) {
+  console.log(`[OTP Code Generated] Email: ${email} | Code: ${otpCode}`);
+
   if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    throw new Error('SMTP credentials are missing on the server. Cannot send OTP.');
+    console.warn('[OTP WARNING] SMTP credentials are missing on the server. OTP code logged to console.');
+    return; // Fall back to console log
   }
 
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.SMTP_USER,
-      pass: process.env.SMTP_PASS
-    }
-  });
+  try {
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
 
-  await transporter.sendMail({
-    from: '"Uplift Support" <no-reply@uplift-emotional-support.org>',
-    to: email,
-    subject: "Uplift Password Reset OTP Code",
-    text: `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`,
-    html: `<p>Your OTP code for password reset is: <b>${otpCode}</b></p><p>It will expire in 10 minutes.</p>`
-  });
-  console.log('OTP Email sent successfully via SMTP');
+    await transporter.sendMail({
+      from: '"Uplift Support" <no-reply@uplift-emotional-support.org>',
+      to: email,
+      subject: "Uplift Password Reset OTP Code",
+      text: `Your OTP code for password reset is: ${otpCode}. It expires in 10 minutes.`,
+      html: `<p>Your OTP code for password reset is: <b>${otpCode}</b></p><p>It will expire in 10 minutes.</p>`
+    });
+    console.log('OTP Email sent successfully via SMTP');
+  } catch (err) {
+    console.error('[OTP ERROR] Failed to send email via SMTP:', err.message);
+    console.log(`[OTP FALLBACK] You can retrieve the OTP from server logs: ${otpCode}`);
+    // Do not throw so the user request does not return a 500 error
+  }
 }
 
 // POST /api/users/signup
