@@ -6,5 +6,7 @@ const MessageSchema = new Schema({
   sender: { type: String, default: 'anonymous' },
   avatar: { type: String, default: null },
   text: { type: String, required: true },
+  seenBy: { type: [String], default: [] },
+  blockedFor: { type: String, default: null },
 }, { timestamps: true });
 module.exports = mongoose.model('Message', MessageSchema);

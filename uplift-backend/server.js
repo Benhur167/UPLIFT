@@ -37,6 +37,8 @@ const Message = require('./models/Message');     // { roomId, sender, avatar, te
 const Community = require('./models/Community');
 const SupportSession = require('./models/SupportSession'); // should include messages[] if you want history
 const User = require('./models/User'); // used by authCheck and other routes
+const DmRequest = require('./models/DmRequest');
+const authCheck = require('./middleware/authCheck');
 
 // ROUTES: require route modules
 const storyRoutes = require('./routes/storyRoutes');
@@ -63,6 +65,10 @@ app.set("io", io);
 // helper to normalize support room name
 const supportRoom = (sessionId) => `support_${sessionId}`;
 
+// Track online status of users: username -> socketId
+const onlineUsers = new Map();
+app.set("onlineUsers", onlineUsers);
+
 // ----------------- SOCKET HANDLERS -----------------
 io.on('connection', (socket) => {
   console.log('⚡ socket connected', socket.id);
@@ -71,6 +77,43 @@ io.on('connection', (socket) => {
   socket.on('joinAdminRoom', () => {
     socket.join('admins');
     console.log(`socket ${socket.id} joined admins room`);
+  });
+
+  // User joins their private room for real-time notifications
+  socket.on('joinUserRoom', async ({ username }) => {
+    if (username) {
+      socket.username = username;
+      onlineUsers.set(username, socket.id);
+      socket.join(`user_${username}`);
+      console.log(`socket ${socket.id} (${username}) registered online`);
+
+      // Broadcast online status to everyone, except those blocked by this user
+      try {
+        const userDoc = await User.findOne({ username }).lean();
+        const blockedSet = new Set(userDoc?.blockedUsers || []);
+        const sockets = await io.fetchSockets();
+        for (const s of sockets) {
+          if (s.username) {
+            const isBlocked = blockedSet.has(s.username);
+            s.emit('userOnlineStatus', { username, online: isBlocked ? false : true });
+          }
+        }
+      } catch (err) {
+        console.warn('selective online status broadcast failed', err);
+        io.emit('userOnlineStatus', { username, online: true });
+      }
+
+      // Join all community rooms this user belongs to, so they receive real-time sliding notifications
+      try {
+        const userComms = await Community.find({ members: username }).select('_id').lean();
+        for (const c of userComms) {
+          socket.join(String(c._id));
+        }
+        console.log(`socket ${socket.id} joined ${userComms.length} community rooms for notifications`);
+      } catch (e) {
+        console.warn('Failed to join user to community rooms for notifications', e);
+      }
+    }
   });
 
   // Generic join (community or legacy)
@@ -100,12 +143,24 @@ io.on('connection', (socket) => {
       } catch (e) {
         console.warn('community join DB update failed', e);
       }
+
+      // Mark existing messages in this room as seen by this user
+      try {
+        await Message.updateMany(
+          { roomId, seenBy: { $ne: username } },
+          { $push: { seenBy: username } }
+        );
+        const updatedMsgs = await Message.find({ roomId }).select('_id seenBy').lean();
+        io.to(roomId).emit('messagesSeenUpdate', { roomId, updates: updatedMsgs });
+      } catch (errMsg) {
+        console.warn('failed to update seenBy status in joinRoom', errMsg);
+      }
     } catch (e) {
       console.error('joinRoom error', e);
     }
   });
 
-  // Community chat message (existing)
+  // Community/DM chat message
   socket.on('chatMessage', async (payload) => {
     try {
       if (!payload || !payload.roomId || !payload.text) {
@@ -113,20 +168,70 @@ io.on('connection', (socket) => {
         return;
       }
 
+      const senderName = payload.sender || 'anonymous';
+      
+      let blockedForUser = null;
+      if (payload.roomId.startsWith('dm_')) {
+        const parts = payload.roomId.replace('dm_', '').split('_');
+        const recipient = parts.find(p => p !== senderName);
+        if (recipient) {
+          const recipientUser = await User.findOne({ username: recipient }).lean();
+          if (recipientUser?.blockedUsers?.includes(senderName)) {
+            blockedForUser = recipient;
+          }
+        }
+      }
+
       const msgDoc = await Message.create({
         roomId: payload.roomId,
-        sender: payload.sender || 'anonymous',
+        sender: senderName,
         avatar: payload.avatar || null,
-        text: payload.text
+        text: payload.text,
+        seenBy: [senderName], // Sender has seen it
+        blockedFor: blockedForUser
       });
 
       const out = msgDoc.toObject ? msgDoc.toObject() : msgDoc;
       if (payload.clientId) out.clientId = payload.clientId;
 
-      // broadcast saved message to room (server-saved message)
-      io.to(payload.roomId).emit('chatMessage', out);
+      if (blockedForUser) {
+        // Emit only back to the sender's own socket so it stays on single tick
+        socket.emit('chatMessage', out);
+      } else {
+        // broadcast saved message to room
+        io.to(payload.roomId).emit('chatMessage', out);
+
+        // DM Notification: if it is a DM room, notify the offline/other user's private room
+        if (payload.roomId.startsWith('dm_')) {
+          const parts = payload.roomId.replace('dm_', '').split('_');
+          const recipient = parts.find(p => p !== senderName);
+          if (recipient) {
+            io.to(`user_${recipient}`).emit('new_dm', out);
+          }
+        }
+      }
     } catch (e) {
       console.error('failed to handle chatMessage', e);
+    }
+  });
+
+  // Handle marking a message as seen
+  socket.on('messageSeen', async (payload) => {
+    try {
+      if (!payload || !payload.messageId || !payload.username) return;
+      const { messageId, username, roomId } = payload;
+
+      const updated = await Message.findOneAndUpdate(
+        { _id: messageId, seenBy: { $ne: username } },
+        { $push: { seenBy: username } },
+        { new: true }
+      );
+
+      if (updated && roomId) {
+        io.to(roomId).emit('messageSeenUpdate', { roomId, messageId, seenBy: updated.seenBy });
+      }
+    } catch (e) {
+      console.error('messageSeen socket error', e);
     }
   });
 
@@ -137,6 +242,15 @@ io.on('connection', (socket) => {
       const { roomId, user, typing } = payload;
       if (!roomId) return;
       io.to(roomId).emit('typing', { roomId, user, typing });
+
+      // If DM, also notify the partner's user room so their dashboard sees "typing..."
+      if (roomId.startsWith('dm_')) {
+        const parts = roomId.replace('dm_', '').split('_');
+        const recipient = parts.find(p => p !== user);
+        if (recipient) {
+          io.to(`user_${recipient}`).emit('dm_typing_update', { roomId, user, typing });
+        }
+      }
     } catch (e) {
       console.error('typing event error', e);
     }
@@ -300,6 +414,10 @@ io.on('connection', (socket) => {
   // handle disconnect
   socket.on('disconnect', (reason) => {
     try {
+      if (socket.username) {
+        onlineUsers.delete(socket.username);
+        io.emit('userOnlineStatus', { username: socket.username, online: false });
+      }
       if (socket.supportSessionId && socket.role === 'admin') {
         const room = supportRoom(socket.supportSessionId);
         io.to(room).emit('admin_left', { sessionId: socket.supportSessionId, admin: socket.username });
@@ -318,9 +436,37 @@ io.on('connection', (socket) => {
 
 // --- REST endpoints related to messages ---
 // Community room history (existing)
-app.get('/api/messages/:roomId', async (req, res) => {
+app.get('/api/messages/:roomId', authCheck, async (req, res) => {
   try {
     const { roomId } = req.params;
+    const username = req.user.username;
+
+    // Filter community room history for newcomers
+    if (mongoose.Types.ObjectId.isValid(roomId)) {
+      const comm = await Community.findById(roomId).lean();
+      if (comm) {
+        const memberJoins = comm.memberJoins || [];
+        const entry = memberJoins.find(mj => mj.username === username);
+        let joinedAt = null;
+        if (entry) {
+          joinedAt = entry.joinedAt;
+        } else {
+          // Backward compatibility check for pre-existing members
+          if (comm.members?.includes(username)) {
+            joinedAt = new Date(0);
+          } else {
+            return res.status(403).json({ message: 'you are not a member of this community' });
+          }
+        }
+
+        const list = await Message.find({
+          roomId,
+          createdAt: { $gte: joinedAt }
+        }).sort({ createdAt: 1 }).limit(500).lean();
+        return res.json(list);
+      }
+    }
+
     const list = await Message.find({ roomId }).sort({ createdAt: 1 }).limit(500).lean();
     res.json(list);
   } catch (e) {
@@ -599,7 +745,220 @@ app.get('/api/support/session/:id/messages', async (req, res) => {
   }
 });
 
+// --- Direct Messaging & Message Deletion Endpoints ---
 
+// DELETE /api/messages/:messageId (protected)
+app.delete('/api/messages/:messageId', authCheck, async (req, res) => {
+  try {
+    const { messageId } = req.params;
+    const username = req.user.username;
+
+    const msg = await Message.findById(messageId);
+    if (!msg) return res.status(404).json({ message: 'message not found' });
+
+    // Creator of the community or sender of the message can delete it
+    let canDelete = (msg.sender === username);
+
+    if (!canDelete && mongoose.Types.ObjectId.isValid(msg.roomId)) {
+      const comm = await Community.findById(msg.roomId);
+      if (comm && comm.creator === username) {
+        canDelete = true;
+      }
+    }
+
+    if (!canDelete) {
+      return res.status(403).json({ message: 'you do not have permission to delete this message' });
+    }
+
+    await Message.findByIdAndDelete(messageId);
+
+    // Broadcast deletion to socket room
+    io.to(msg.roomId).emit('messageDeleted', { roomId: msg.roomId, messageId });
+
+    return res.json({ success: true });
+  } catch (e) {
+    console.error('DELETE /api/messages/:messageId error', e);
+    return res.status(500).json({ message: 'failed to delete message' });
+  }
+});
+
+// GET /api/messages/dms/list (protected)
+app.get('/api/messages/dms/list', authCheck, async (req, res) => {
+  try {
+    const username = req.user.username;
+
+    // Find all accepted DM requests involving this user
+    const acceptedRequests = await DmRequest.find({
+      $or: [{ sender: username }, { recipient: username }],
+      status: 'accepted'
+    }).lean();
+
+    const dms = [];
+    for (const reqObj of acceptedRequests) {
+      const partner = reqObj.sender === username ? reqObj.recipient : reqObj.sender;
+      
+      // Get the last message in this room
+      const roomId = `dm_${[username, partner].sort().join('_')}`;
+      const lastMsg = await Message.findOne({ roomId }).sort({ createdAt: -1 }).lean();
+
+      // Get partner profile details
+      const partnerUser = await User.findOne({ username: partner }).lean();
+
+      // Count unread messages from this partner
+      const unreadCount = await Message.countDocuments({
+        roomId,
+        sender: partner,
+        seenBy: { $ne: username }
+      });
+      
+      dms.push({
+        partner,
+        avatar: partnerUser?.avatar || null,
+        lastMessage: lastMsg ? {
+          text: lastMsg.text,
+          sender: lastMsg.sender,
+          createdAt: lastMsg.createdAt,
+          seenBy: lastMsg.seenBy || []
+        } : null,
+        isOnline: onlineUsers.has(partner) && !(partnerUser?.blockedUsers?.includes(username)),
+        unreadCount
+      });
+    }
+
+    res.json(dms);
+  } catch (e) {
+    console.error('GET /api/messages/dms/list error', e);
+    res.status(500).json({ message: 'failed to fetch DMs list' });
+  }
+});
+
+// GET /api/messages/dms/requests (protected)
+app.get('/api/messages/dms/requests', authCheck, async (req, res) => {
+  try {
+    const username = req.user.username;
+
+    // Find all requests involving this user
+    const requests = await DmRequest.find({
+      $or: [{ sender: username }, { recipient: username }]
+    }).sort({ updatedAt: -1 }).lean();
+
+    res.json(requests);
+  } catch (e) {
+    console.error('GET /api/messages/dms/requests error', e);
+    res.status(500).json({ message: 'failed to fetch DM requests' });
+  }
+});
+
+// POST /api/messages/dms/request (protected)
+app.post('/api/messages/dms/request', authCheck, async (req, res) => {
+  try {
+    const username = req.user.username;
+    const { recipient } = req.body;
+
+    if (!recipient) return res.status(400).json({ message: 'recipient username required' });
+    if (recipient === username) return res.status(400).json({ message: 'you cannot message yourself' });
+
+    // Check if recipient exists
+    const recipientUser = await User.findOne({ username: recipient });
+    if (!recipientUser) return res.status(404).json({ message: 'user not found' });
+
+    // Check if there is already a request in either direction
+    let request = await DmRequest.findOne({
+      $or: [
+        { sender: username, recipient },
+        { sender: recipient, recipient: username }
+      ]
+    });
+
+    if (request) {
+      if (request.status === 'accepted') {
+        return res.status(400).json({ message: 'chat already accepted', request });
+      }
+      if (request.status === 'pending') {
+        return res.status(400).json({ message: 'chat request is already pending', request });
+      }
+      // If declined, reset to pending and update sender/recipient
+      request.sender = username;
+      request.recipient = recipient;
+      request.status = 'pending';
+      await request.save();
+    } else {
+      request = await DmRequest.create({ sender: username, recipient });
+    }
+
+    // Emit live notification if recipient is online
+    io.to(`user_${recipient}`).emit('incoming_dm_request', request);
+
+    res.status(201).json(request);
+  } catch (e) {
+    console.error('POST /api/messages/dms/request error', e);
+    res.status(500).json({ message: 'failed to send DM request' });
+  }
+});
+
+// POST /api/messages/dms/request/:requestId/respond (protected)
+app.post('/api/messages/dms/request/:requestId/respond', authCheck, async (req, res) => {
+  try {
+    const username = req.user.username;
+    const { requestId } = req.params;
+    const { action } = req.body; // 'accept' or 'decline'
+
+    if (!['accept', 'decline'].includes(action)) {
+      return res.status(400).json({ message: 'invalid action' });
+    }
+
+    const request = await DmRequest.findById(requestId);
+    if (!request) return res.status(404).json({ message: 'request not found' });
+
+    // Verify recipient is the one responding
+    if (request.recipient !== username) {
+      return res.status(403).json({ message: 'unauthorized to respond to this request' });
+    }
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({ message: 'request already processed' });
+    }
+
+    request.status = action === 'accept' ? 'accepted' : 'declined';
+    await request.save();
+
+    // Emit response notification to sender
+    io.to(`user_${request.sender}`).emit('dm_request_response', request);
+
+    res.json(request);
+  } catch (e) {
+    console.error('POST /api/messages/dms/request/:requestId/respond error', e);
+    res.status(500).json({ message: 'failed to respond to request' });
+  }
+});
+
+// GET /api/messages/dm/:partner (protected)
+app.get('/api/messages/dm/:partner', authCheck, async (req, res) => {
+  try {
+    const username = req.user.username;
+    const { partner } = req.params;
+
+    // Verify that an accepted request exists
+    const request = await DmRequest.findOne({
+      $or: [
+        { sender: username, recipient: partner },
+        { sender: partner, recipient: username }
+      ],
+      status: 'accepted'
+    });
+
+    if (!request) {
+      return res.status(403).json({ message: 'you must request and accept connection before chatting' });
+    }
+
+    const roomId = `dm_${[username, partner].sort().join('_')}`;
+    const list = await Message.find({ roomId, blockedFor: { $ne: username } }).sort({ createdAt: 1 }).limit(500).lean();
+    res.json(list);
+  } catch (e) {
+    console.error('GET /api/messages/dm/:partner error', e);
+    res.status(500).json({ message: 'failed to fetch DM history' });
+  }
+});
 
 // start server
 const PORT = process.env.PORT || 5000;

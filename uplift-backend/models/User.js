@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema({
   email: { type: String, unique: true, sparse: true },      // email for OTP and Google login (sparse unique)
   role: { type: String, default: 'user', enum: ['user', 'admin'] }, // user or admin
   bio: { type: String, default: "" },
+  blockedUsers: { type: [String], default: [] },
   otp: {
     code: { type: String },
     expiresAt: { type: Date }

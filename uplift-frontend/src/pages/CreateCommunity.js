@@ -17,21 +17,34 @@ export default function CreateCommunity() {
     setErr("");
     if (!name.trim()) return setErr("Community name is required");
 
+    const stored = JSON.parse(localStorage.getItem("uplift_user") || "null");
+    const username = stored?.username || stored?.user?.username;
+
+    if (!username) {
+      return setErr("You must be logged in to create a community.");
+    }
+
     try {
-      await fetch(`${API_BASE}/communities`, {
+      const res = await fetch(`${API_BASE}/communities`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-username": username
+        },
         body: JSON.stringify({
           name,
           description,
           rules: rules.split(",").map((r) => r.trim()).filter(Boolean),
-          createdBy: "anonymous",
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to create community");
+      }
       navigate("/community-chat"); // go back after creation
     } catch (e) {
       console.error(e);
-      setErr("Failed to create community");
+      setErr(e.message || "Failed to create community");
     }
   };
 

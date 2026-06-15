@@ -16,7 +16,7 @@ import SupportSession from "./pages/SupportSession";
 import AdminSupport from './pages/AdminDashboard';
 import Mindfulness from "./pages/Mindfulness";
 import Articles from "./pages/Articles";
-import Workshops from "./pages/Workshops";
+import Workshops from "./pages/Workshops";import DirectChat from "./pages/DirectChat";
 
 
 function RequireAdmin({ children }) {
@@ -48,6 +48,7 @@ function App() {
         <Route path="/community-chat" element={<Communities />} />
         <Route path="/community-create" element={<CreateCommunity />} />
         <Route path="/community/:id" element={<CommunityChat />} />
+        <Route path="/dm/:partner" element={<DirectChat />} />
         <Route path="/signup" element={<CreateAccount />} />
         <Route path="/signin" element={<SignIn />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

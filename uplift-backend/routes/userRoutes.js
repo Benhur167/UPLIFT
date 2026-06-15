@@ -265,7 +265,8 @@ router.get('/profile', authCheck, async (req, res) => {
       avatar: user.avatar,
       role: user.role || 'user',
       email: user.email,
-      bio: user.bio || ""
+      bio: user.bio || "",
+      blockedUsers: user.blockedUsers || []
     });
   } catch (e) {
     console.error('GET /api/users/profile error', e);
@@ -296,11 +297,84 @@ router.put('/profile', authCheck, async (req, res) => {
       avatar: user.avatar,
       role: user.role || 'user',
       email: user.email,
-      bio: user.bio || ""
+      bio: user.bio || "",
+      blockedUsers: user.blockedUsers || []
     });
   } catch (e) {
     console.error('PUT /api/users/profile error', e);
     res.status(500).json({ message: 'Failed to update profile' });
+  }
+});
+
+// POST /api/users/block (protected)
+router.post('/block', authCheck, async (req, res) => {
+  try {
+    const { target } = req.body;
+    const username = req.user.username;
+
+    if (!target) return res.status(400).json({ message: 'target username required' });
+    if (target === username) return res.status(400).json({ message: 'you cannot block yourself' });
+
+    const user = await User.findOneAndUpdate(
+      { username },
+      { $addToSet: { blockedUsers: target } },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ message: 'user not found' });
+
+    // Emit live offline status change to target
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`user_${target}`).emit('userOnlineStatus', { username, online: false });
+    }
+
+    res.json({ success: true, blockedUsers: user.blockedUsers || [] });
+  } catch (e) {
+    console.error('POST /api/users/block error', e);
+    res.status(500).json({ message: 'failed to block user' });
+  }
+});
+
+// POST /api/users/unblock (protected)
+router.post('/unblock', authCheck, async (req, res) => {
+  try {
+    const { target } = req.body;
+    const username = req.user.username;
+
+    if (!target) return res.status(400).json({ message: 'target username required' });
+
+    const user = await User.findOneAndUpdate(
+      { username },
+      { $pull: { blockedUsers: target } },
+      { new: true }
+    );
+
+    if (!user) return res.status(404).json({ message: 'user not found' });
+
+    // Clear blockedFor for target's messages in this DM room
+    const Message = require('../models/Message');
+    const roomId = `dm_${[username, target].sort().join('_')}`;
+    await Message.updateMany(
+      { roomId, blockedFor: username },
+      { $set: { blockedFor: null } }
+    );
+
+    // Emit live unblocked event to room (so A receives, and B's single ticks update to double ticks)
+    const io = req.app.get('io');
+    if (io) {
+      io.to(roomId).emit('dm_unblocked', { roomId, unblockedBy: username });
+
+      // If A is online, emit true online status to B's user room
+      const onlineUsers = req.app.get('onlineUsers');
+      const isOnline = onlineUsers ? onlineUsers.has(username) : false;
+      io.to(`user_${target}`).emit('userOnlineStatus', { username, online: isOnline });
+    }
+
+    res.json({ success: true, blockedUsers: user.blockedUsers || [] });
+  } catch (e) {
+    console.error('POST /api/users/unblock error', e);
+    res.status(500).json({ message: 'failed to unblock user' });
   }
 });
 
