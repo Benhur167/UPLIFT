@@ -233,7 +233,8 @@ export default function CommunityChat() {
         }
         const raw = await msgRes.json().catch(() => []);
         if (mounted) {
-          setMessages(raw.map(normalizeMsg).filter(Boolean));
+          const validList = Array.isArray(raw) ? raw : [];
+          setMessages(validList.map(normalizeMsg).filter(Boolean));
         }
       } catch (e) {
         console.error("Chat setup error", e);

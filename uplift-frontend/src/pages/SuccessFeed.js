@@ -37,10 +37,12 @@ export default function SuccessFeed() {
     const fetchStories = async () => {
       try {
         const res = await fetch(`${API_BASE}/stories/success/latest`);
+        if (!res.ok) throw new Error(`HTTP error ${res.status}`);
         const data = await res.json();
-        setStories(data || []);
+        setStories(Array.isArray(data) ? data : []);
       } catch (e) {
         console.error("Failed to load success stories", e);
+        setStories([]);
       } finally {
         setLoading(false);
       }

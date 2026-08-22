@@ -28,9 +28,26 @@ app.use(morgan('dev'));
 
 // DB
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/ProjectUplift';
-mongoose.connect(MONGO_URI)
+mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
   .then(() => console.log('✅ Mongo connected'))
   .catch(e => console.error('Mongo connect error', e));
+
+// Health check endpoints for deployment & monitoring
+const healthHandler = (_req, res) => {
+  const readyState = mongoose.connection.readyState;
+  const states = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  const dbState = states[readyState] || 'unknown';
+  const isOk = readyState === 1;
+  res.status(isOk ? 200 : 500).json({
+    status: isOk ? 'ok' : 'error',
+    dbState,
+    dbConnected: isOk,
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+};
+app.get('/health', healthHandler);
+app.get('/api/health', healthHandler);
 
 // models (ensure these files exist)
 const Message = require('./models/Message');     // { roomId, sender, avatar, text, createdAt }

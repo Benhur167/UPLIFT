@@ -56,10 +56,11 @@ export default function Communities() {
       const res = await fetch(`${API_BASE}/communities`);
       if (!res.ok) throw new Error("Failed to load communities");
       const data = await res.json();
-      setCommunities(data || []);
+      setCommunities(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error("Failed to fetch communities", e);
-      setError("Could not load communities. Try again later.");
+      setCommunities([]);
+      setError("Could not load communities. Server or database may be offline.");
     }
   }, []);
 
@@ -73,7 +74,9 @@ export default function Communities() {
       });
       if (dmsRes.ok) {
         const dmsData = await dmsRes.json();
-        setActiveDms(dmsData);
+        setActiveDms(Array.isArray(dmsData) ? dmsData : []);
+      } else {
+        setActiveDms([]);
       }
 
       // 2. Fetch pending/all requests
@@ -82,7 +85,9 @@ export default function Communities() {
       });
       if (reqRes.ok) {
         const reqData = await reqRes.json();
-        setDmRequests(reqData);
+        setDmRequests(Array.isArray(reqData) ? reqData : []);
+      } else {
+        setDmRequests([]);
       }
     } catch (e) {
       console.error("Failed to fetch DMs/requests", e);
